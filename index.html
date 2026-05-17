@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Vidyarthi 🎒</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a0a2e'/><text y='50' x='50' font-size='38' text-anchor='middle' dominant-baseline='central'>🎒</text><text y='82' x='50' font-size='22' text-anchor='middle' dominant-baseline='central'>🇮🇳</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+Devanagari:wght@400;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: radial-gradient(ellipse at center, #1a0a2e 0%, #0d0520 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:100vh; font-family:'Baloo 2',cursive; overflow:hidden; user-select:none;
+  }
+  #gameContainer { position:relative; }
+  canvas { display:block; border-radius:20px; box-shadow:0 0 60px rgba(255,153,51,0.5), 0 0 120px rgba(19,136,8,0.2); }
+
+  /* HUD */
+  #hud { position:absolute; top:0; left:0; width:100%; pointer-events:none; }
+  #scoreDisplay {
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    font-size:32px; font-weight:800; color:#fff;
+    text-shadow: 0 0 10px rgba(255,153,51,0.8), 3px 3px 0 #FF6B00;
+  }
+  #livesDisplay { position:absolute; top:14px; left:14px; display:flex; gap:3px; }
+  #powerDisplay { position:absolute; top:14px; right:14px; display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+  #powerLabel { font-size:11px; color:#FFD700; font-weight:600; letter-spacing:1px; }
+  #powerTrack { width:70px; height:10px; background:rgba(0,0,0,0.4); border-radius:5px; border:1px solid rgba(255,215,0,0.4); overflow:hidden; }
+  #powerFill { height:100%; background:linear-gradient(90deg,#FF6B00,#FFD700,#fff); border-radius:5px; transition:width 0.15s; width:0%; }
+  #levelBadge {
+    position:absolute; bottom:70px; right:14px;
+    background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.4);
+    color:#FFD700; font-size:11px; font-weight:600;
+    padding:3px 8px; border-radius:10px; letter-spacing:1px;
+  }
+  #skinHint { position:absolute; bottom:70px; left:14px; font-size:10px; color:rgba(255,255,255,0.5); }
+
+  /* Skin Selector */
+  #skinPanel {
+    position:absolute; bottom:70px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px;
+  }
+  .skinBtn {
+    background:rgba(0,0,0,0.5); border:2px solid rgba(255,255,255,0.2);
+    border-radius:10px; padding:4px 8px; cursor:pointer; font-size:18px;
+    transition:all 0.2s; pointer-events:all;
+  }
+  .skinBtn.active { border-color:#FFD700; background:rgba(255,215,0,0.2); transform:scale(1.15); }
+  .skinBtn:hover { border-color:#FF9933; }
+
+  /* Overlays */
+  .overlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:20px; backdrop-filter:blur(6px);
+    background:rgba(5,0,20,0.85);
+  }
+  .overlay h1 { font-size:36px; font-weight:800; color:#FFD700; text-align:center; line-height:1.1; margin-bottom:4px; text-shadow:0 0 30px #FF6B00; }
+  .overlay .sub { font-size:13px; color:#FF9933; margin-bottom:6px; letter-spacing:1px; }
+  .overlay .hindi { font-family:'Noto Sans Devanagari',sans-serif; font-size:15px; color:#FFD700; margin-bottom:16px; }
+  .scores-row { display:flex; gap:24px; margin-bottom:20px; }
+  .score-box { text-align:center; }
+  .score-box .label { font-size:11px; color:#aaa; letter-spacing:1px; }
+  .score-box .val { font-size:24px; font-weight:800; color:#FFD700; }
+  .bigBtn {
+    background:linear-gradient(135deg,#FF6B00,#FF9933);
+    color:#fff; border:none; padding:13px 42px;
+    border-radius:30px; font-size:17px; font-weight:700;
+    cursor:pointer; pointer-events:all;
+    box-shadow:0 6px 24px rgba(255,107,0,0.5);
+    transition:transform 0.12s, box-shadow 0.12s;
+    font-family:'Baloo 2',cursive; letter-spacing:1px;
+  }
+  .bigBtn:hover { transform:scale(1.06); box-shadow:0 8px 32px rgba(255,107,0,0.7); }
+  .bigBtn:active { transform:scale(0.97); }
+  .controls-hint { margin-top:16px; font-size:11px; color:rgba(255,255,255,0.4); text-align:center; line-height:1.8; }
+  .medal { font-size:52px; margin-bottom:8px; }
+  .feature-chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0 18px; }
+  .chip { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); font-size:10px; padding:3px 9px; border-radius:20px; }
+
+  /* Toast */
+  #toast {
+    position:absolute; top:56px; left:50%; transform:translateX(-50%) translateY(-20px);
+    background:rgba(0,0,0,0.75); color:#FFD700; font-size:13px; font-weight:700;
+    padding:5px 16px; border-radius:20px; opacity:0; pointer-events:none;
+    transition:opacity 0.3s, transform 0.3s; border:1px solid rgba(255,215,0,0.3);
+    white-space:nowrap;
+  }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* Character Picker (Home Screen) */
+  .charPickBtn {
+    background:rgba(0,0,0,0.4); border:2px solid rgba(255,255,255,0.2);
+    border-radius:14px; padding:8px 8px 6px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    transition:all 0.2s; pointer-events:all; min-width:70px; flex-shrink:0;
+  }
+  .charPickBtn.active {
+    border-color:#FFD700; background:rgba(255,215,0,0.18);
+    transform:scale(1.1); box-shadow:0 0 14px rgba(255,215,0,0.4);
+  }
+  .charPickBtn:hover:not(.active) { border-color:#FF9933; transform:scale(1.05); }
+  .charPickEmoji { font-size:22px; line-height:1; }
+  .charPickCharName { font-size:9px; color:#FF9933; font-weight:800; letter-spacing:0.3px; white-space:nowrap; margin-top:1px; }
+  .charPickName { font-size:8px; color:rgba(255,255,255,0.6); font-weight:600; white-space:nowrap; }
+  .charPickBtn.active .charPickName { color:#FFD700; }
+  .charPickBtn.active .charPickCharName { color:#fff; }
+  #charPickerRow {
+    display:flex; gap:8px; overflow-x:auto; padding:4px 4px 6px;
+    scroll-snap-type:x mandatory; max-width:380px;
+    scrollbar-width:thin; scrollbar-color:rgba(255,215,0,0.3) transparent;
+  }
+  #charPickerRow::-webkit-scrollbar { height:3px; }
+  #charPickerRow::-webkit-scrollbar-track { background:transparent; }
+  #charPickerRow::-webkit-scrollbar-thumb { background:rgba(255,215,0,0.35); border-radius:4px; }
+  .charPickBtn { scroll-snap-align:start; }
+
+  /* Profile Overlay */
+  #profileOverlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:20px; backdrop-filter:blur(8px);
+    background:rgba(5,0,20,0.92); z-index:10;
+  }
+  #profileOverlay h2 { font-size:22px; font-weight:800; color:#FFD700; margin-bottom:4px; text-shadow:0 0 20px #FF6B00; }
+  #profileOverlay .psub { font-size:11px; color:#FF9933; letter-spacing:1px; margin-bottom:18px; }
+  .profileField { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; width:260px; }
+  .profileField label { font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:1.5px; font-weight:600; }
+  .profileField input {
+    background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,215,0,0.25);
+    color:#fff; font-family:'Baloo 2',cursive; font-size:14px; font-weight:600;
+    padding:8px 12px; border-radius:10px; outline:none;
+    transition:border-color 0.2s;
+  }
+  .profileField input:focus { border-color:#FFD700; background:rgba(255,215,0,0.08); }
+  #ageDisplay { font-size:12px; color:#FFD700; font-weight:700; margin-top:2px; min-height:16px; }
+  #profileSaveBtn {
+    background:linear-gradient(135deg,#FF6B00,#FF9933);
+    color:#fff; border:none; padding:11px 38px;
+    border-radius:30px; font-size:15px; font-weight:700;
+    cursor:pointer; pointer-events:all;
+    box-shadow:0 6px 20px rgba(255,107,0,0.4);
+    transition:transform 0.12s; font-family:'Baloo 2',cursive;
+    margin-top:6px;
+  }
+  #profileSaveBtn:hover { transform:scale(1.05); }
+  #profileCard {
+    background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.25);
+    border-radius:12px; padding:8px 18px; margin-bottom:10px;
+    display:flex; align-items:center; gap:10px; cursor:pointer;
+    pointer-events:all; transition:background 0.2s; max-width:260px; width:100%;
+  }
+  #profileCard:hover { background:rgba(255,215,0,0.14); }
+  #profileCardAvatar { font-size:28px; }
+  #profileCardInfo { flex:1; }
+  #profileCardName { font-size:14px; font-weight:800; color:#FFD700; }
+  #profileCardMeta { font-size:10px; color:rgba(255,255,255,0.5); margin-top:1px; }
+
+  /* Night mode toggle */
+  #nightToggle {
+    position:absolute; bottom:10px; right:10px;
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2);
+    color:#fff; padding:4px 10px; border-radius:20px; font-size:11px;
+    cursor:pointer; pointer-events:all;
+  }
+
+  /* Difficulty Selector */
+  #difficultyRow {
+    display:flex; gap:7px; justify-content:center; margin-bottom:12px; flex-wrap:wrap;
+  }
+  .diffBtn {
+    border:2px solid rgba(255,255,255,0.18); border-radius:12px;
+    padding:6px 13px; cursor:pointer; font-family:'Baloo 2',cursive;
+    font-size:12px; font-weight:700; letter-spacing:0.5px;
+    transition:all 0.18s; pointer-events:all; background:rgba(0,0,0,0.35);
+    display:flex; flex-direction:column; align-items:center; gap:1px; min-width:72px;
+  }
+  .diffBtn .diff-icon { font-size:16px; line-height:1; }
+  .diffBtn .diff-name { font-size:11px; font-weight:800; letter-spacing:1px; }
+  .diffBtn .diff-desc { font-size:8px; color:rgba(255,255,255,0.5); font-weight:500; }
+  .diffBtn[data-diff="easy"]   { color:#4ade80; }
+  .diffBtn[data-diff="medium"] { color:#facc15; }
+  .diffBtn[data-diff="hard"]   { color:#fb923c; }
+  .diffBtn[data-diff="extreme"]{ color:#f87171; }
+  .diffBtn[data-diff="easy"].active   { border-color:#4ade80; background:rgba(74,222,128,0.15); box-shadow:0 0 14px rgba(74,222,128,0.35); transform:scale(1.08); }
+  .diffBtn[data-diff="medium"].active { border-color:#facc15; background:rgba(250,204,21,0.15); box-shadow:0 0 14px rgba(250,204,21,0.35); transform:scale(1.08); }
+  .diffBtn[data-diff="hard"].active   { border-color:#fb923c; background:rgba(251,146,60,0.15); box-shadow:0 0 14px rgba(251,146,60,0.35); transform:scale(1.08); }
+  .diffBtn[data-diff="extreme"].active{ border-color:#f87171; background:rgba(248,113,113,0.15); box-shadow:0 0 14px rgba(248,113,113,0.4);  transform:scale(1.08); }
+  .diffBtn:hover:not(.active) { border-color:rgba(255,255,255,0.45); transform:scale(1.04); }
+
+  /* Difficulty badge in HUD */
+  #diffBadge {
+    position:absolute; bottom:90px; right:14px;
+    font-size:10px; font-weight:700; padding:2px 8px;
+    border-radius:10px; letter-spacing:1px; border:1px solid;
+  }
+</style>
+</head>
+<body>
+<div id="gameContainer">
+  <canvas id="c"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div id="scoreDisplay">0</div>
+    <div id="livesDisplay"></div>
+    <div id="powerDisplay">
+      <div id="powerLabel">⚡ POWER</div>
+      <div id="powerTrack"><div id="powerFill"></div></div>
+    </div>
+    <div id="levelBadge">LEVEL 1</div>
+    <div id="diffBadge"></div>
+    <div id="skinHint">S = skin</div>
+  </div>
+
+  <!-- Skin Panel (shown on idle) -->
+  <div id="skinPanel" style="display:none;flex-wrap:wrap;gap:6px;max-width:380px;">
+    <button class="skinBtn active" data-skin="0" title="Arjun - School Boy">🎒</button>
+    <button class="skinBtn" data-skin="1" title="Priya - School Girl">🎀</button>
+    <button class="skinBtn" data-skin="2" title="Rohit - Cricket Star">🏏</button>
+    <button class="skinBtn" data-skin="3" title="Neha - Scientist">🔬</button>
+    <button class="skinBtn" data-skin="4" title="Ravi - Footballer">⚽</button>
+    <button class="skinBtn" data-skin="5" title="Meera - Classical Dancer">💃</button>
+    <button class="skinBtn" data-skin="6" title="Vikram - Ninja">🥷</button>
+    <button class="skinBtn" data-skin="7" title="Ananya - Astronaut">🚀</button>
+    <button class="skinBtn" data-skin="8" title="Kartik - Chef">👨‍🍳</button>
+    <button class="skinBtn" data-skin="9" title="Anmol - Developer">💻</button>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <!-- Night Toggle -->
+  <button id="nightToggle">🌙 Night</button>
+
+  <!-- Profile Setup Overlay -->
+  <div id="profileOverlay">
+    <div style="font-size:42px;margin-bottom:6px;">🎒</div>
+    <h2>Create Your Profile</h2>
+    <div class="psub">KHILADI KI DETAILS</div>
+    <div class="profileField">
+      <label>YOUR NAME</label>
+      <input type="text" id="profileName" placeholder="Enter your name..." maxlength="20" autocomplete="off">
+    </div>
+    <div class="profileField">
+      <label>DATE OF BIRTH</label>
+      <input type="date" id="profileDob" max="">
+      <div id="ageDisplay"></div>
+    </div>
+    <button id="profileSaveBtn">✅ Save & Play!</button>
+    <div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.3);text-align:center;">Your details are saved on this device only</div>
+  </div>
+
+  <!-- Start Overlay -->
+  <div class="overlay" id="startOverlay" style="display:none">
+    <!-- Profile Card -->
+    <div id="profileCard" onclick="document.getElementById('profileOverlay').style.display='flex';document.getElementById('startOverlay').style.display='none';">
+      <div id="profileCardAvatar">🎒</div>
+      <div id="profileCardInfo">
+        <div id="profileCardName">Player</div>
+        <div id="profileCardMeta">Tap to edit profile</div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.3);">✏️</div>
+    </div>
+
+    <div class="medal" id="homeMedal">🎒</div>
+    <h1 id="homeTitle">Flappy<br>Vidyarthi!</h1>
+    <div class="sub" id="homeSubLabel">India Ka School Champion</div>
+    <div class="hindi" id="homeHindi">उड़ान भरो, आगे बढ़ो!</div>
+
+    <!-- Character Selector on Home -->
+    <div style="margin-bottom:12px;text-align:center;width:100%;">
+      <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:7px;">CHOOSE YOUR CHARACTER</div>
+      <div id="charPickerRow"></div>
+    </div>
+
+    <!-- Difficulty Selector on Home -->
+    <div style="margin-bottom:4px;text-align:center;width:100%;">
+      <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:7px;">CHOOSE DIFFICULTY</div>
+      <div id="difficultyRow">
+        <button class="diffBtn active" data-diff="easy">
+          <span class="diff-icon">🐢</span>
+          <span class="diff-name">EASY</span>
+          <span class="diff-desc">Slow &amp; steady</span>
+        </button>
+        <button class="diffBtn" data-diff="medium">
+          <span class="diff-icon">🦊</span>
+          <span class="diff-name">MEDIUM</span>
+          <span class="diff-desc">Normal pace</span>
+        </button>
+        <button class="diffBtn" data-diff="hard">
+          <span class="diff-icon">🐆</span>
+          <span class="diff-name">HARD</span>
+          <span class="diff-desc">Fast &amp; furious</span>
+        </button>
+        <button class="diffBtn" data-diff="extreme">
+          <span class="diff-icon">🔥</span>
+          <span class="diff-name">EXTREME</span>
+          <span class="diff-desc">Insane speed!</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="feature-chips">
+      <span class="chip">❤️ 3 Lives</span>
+      <span class="chip">⭐ Power Ups</span>
+      <span class="chip">🏆 Leaderboard</span>
+      <span class="chip">🎨 10 Skins</span>
+      <span class="chip">🔊 Sound FX</span>
+      <span class="chip">🌙 Night Mode</span>
+      <span class="chip">⚡ 4 Difficulty Levels</span>
+    </div>
+    <button class="bigBtn" id="startBtn">▶ Start Game</button>
+    <div class="controls-hint">
+      SPACE / Tap = Fly &nbsp;|&nbsp; SHIFT = Activate Power<br>
+      S = Switch Skin &nbsp;|&nbsp; M = Toggle Sound
+    </div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div class="overlay" id="gameOverOverlay" style="display:none">
+    <div class="medal" id="medalDisplay">💀</div>
+    <h1 id="gameOverTitle">Game Over!</h1>
+    <div class="sub" id="gameOverSub">Phir koshish karo!</div>
+    <div class="scores-row">
+      <div class="score-box">
+        <div class="label">SCORE</div>
+        <div class="val" id="finalScore">0</div>
+      </div>
+      <div class="score-box">
+        <div class="label">BEST</div>
+        <div class="val" id="bestScore">0</div>
+      </div>
+    </div>
+    <button class="bigBtn" id="restartBtn">🔄 Play Again</button>
+    <div id="leaderboardSection" style="margin-top:16px;text-align:center"></div>
+  </div>
+
+  <!-- Pause Overlay -->
+  <div class="overlay" id="pauseOverlay" style="display:none">
+    <h1 style="font-size:28px">⏸ Paused</h1>
+    <div class="sub" style="margin-top:8px">Press P or ESC to resume</div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const W = 420, H = 600;
+const PIPE_W = 54, PIPE_GAP_BASE = 158;
+const GRAVITY = 0.38, JUMP_VEL = -7.4, MAX_FALL = 9.5;
+const PIPE_INTERVAL = 65;
+const STAR_EVERY = 65, COIN_EVERY = 110;
+const POWER_DURATION = 140; // frames
+const LEVEL_SCORES = [0,10,20,35,55,80];
+
+// ─── DIFFICULTY ────────────────────────────────────────────────────────────
+const DIFFICULTIES = {
+  easy:    { speed:2.2,  label:'🐢 EASY',    color:'#4ade80', borderColor:'#4ade80', bg:'rgba(74,222,128,0.18)',  gapMult:1.15, gravMult:0.9  },
+  medium:  { speed:3.2,  label:'🦊 MEDIUM',  color:'#facc15', borderColor:'#facc15', bg:'rgba(250,204,21,0.18)',  gapMult:1.0,  gravMult:1.0  },
+  hard:    { speed:4.4,  label:'🐆 HARD',    color:'#fb923c', borderColor:'#fb923c', bg:'rgba(251,146,60,0.18)',  gapMult:0.88, gravMult:1.12 },
+  extreme: { speed:6.0,  label:'🔥 EXTREME', color:'#f87171', borderColor:'#f87171', bg:'rgba(248,113,113,0.18)', gapMult:0.76, gravMult:1.28 },
+};
+let selectedDiff = 'easy';
+
+// ─── CANVAS SETUP ──────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = W; canvas.height = H;
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let gameState = 'idle'; // idle | playing | dead | paused
+let score, hiScore = +(localStorage.getItem('fv_hi')||0);
+let lives, power, powerActive, powerTimer;
+let frame, bgX, speed, level;
+let bird, pipes, stars, coins, particles, floatTexts;
+let animId, lastFrameTime;
+let nightMode = false;
+let soundOn = true;
+let selectedSkin = 0;
+let leaderboard = JSON.parse(localStorage.getItem('fv_lb')||'[]');
+let comboCount = 0, lastPipeFrame = 0;
+
+// ─── AUDIO ─────────────────────────────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ac;
+function getAC(){
+  if(!ac){ ac = new AudioCtx(); }
+  // Resume if suspended (browser autoplay policy)
+  if(ac.state === 'suspended') ac.resume();
+  return ac;
+}
+// Unlock audio on first user gesture
+function unlockAudio(){
+  try {
+    const a = getAC();
+    const buf = a.createBuffer(1,1,22050);
+    const src = a.createBufferSource();
+    src.buffer = buf; src.connect(a.destination); src.start(0);
+    a.resume();
+  } catch(e){}
+}
+document.addEventListener('click', unlockAudio, {once:true});
+document.addEventListener('touchstart', unlockAudio, {once:true});
+document.addEventListener('keydown', unlockAudio, {once:true});
+
+function playTone(freq, type='sine', dur=0.1, vol=0.3, delay=0){
+  if(!soundOn) return;
+  try {
+    const a = getAC();
+    const osc = a.createOscillator();
+    const gain = a.createGain();
+    osc.connect(gain); gain.connect(a.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, a.currentTime+delay);
+    gain.gain.setValueAtTime(vol, a.currentTime+delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, a.currentTime+delay+dur);
+    osc.start(a.currentTime+delay);
+    osc.stop(a.currentTime+delay+dur+0.05);
+  } catch(e){}
+}
+function sfxJump(){ playTone(520,'sine',0.08,0.2); playTone(680,'sine',0.06,0.15,0.06); }
+function sfxScore(){ playTone(660,'square',0.05,0.2); playTone(880,'square',0.05,0.2,0.07); playTone(1100,'square',0.08,0.15,0.14); }
+function sfxHit(){ playTone(180,'sawtooth',0.25,0.4); playTone(120,'sawtooth',0.2,0.3,0.1); }
+function sfxStar(){ playTone(900,'sine',0.06,0.25); playTone(1200,'sine',0.08,0.2,0.08); playTone(1500,'sine',0.1,0.15,0.18); }
+function sfxPower(){ for(let i=0;i<6;i++) playTone(400+i*120,'sine',0.12,0.2,i*0.07); }
+function sfxLevelUp(){ [523,659,784,1047].forEach((f,i)=>playTone(f,'triangle',0.15,0.25,i*0.1)); }
+function sfxDie(){ [300,250,200,150,100].forEach((f,i)=>playTone(f,'sawtooth',0.2,0.3,i*0.12)); }
+
+// ─── UTILS ─────────────────────────────────────────────────────────────────
+function lerp(a,b,t){ return a+(b-a)*t; }
+function rnd(a,b){ return a+Math.random()*(b-a); }
+function dist(ax,ay,bx,by){ const dx=ax-bx,dy=ay-by; return Math.sqrt(dx*dx+dy*dy); }
+function emoji(e,x,y,sz){
+  ctx.save(); ctx.font=sz+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(e,x,y); ctx.restore();
+}
+
+// ─── TOAST ─────────────────────────────────────────────────────────────────
+let toastTimeout;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+// ─── FLOAT TEXTS ───────────────────────────────────────────────────────────
+function addFloat(x,y,text,color='#FFD700'){
+  floatTexts.push({x,y,text,color,life:1,vy:-1.5});
+}
+
+// ─── PARTICLES ─────────────────────────────────────────────────────────────
+function spawnParticles(x,y,col,n=10,speed=4){
+  for(let i=0;i<n;i++){
+    const angle=rnd(0,Math.PI*2);
+    const spd=rnd(1,speed);
+    particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-1.5,life:1,col,r:rnd(2,6)});
+  }
+}
+function spawnConfetti(x,y){
+  const cols=['#FF9933','#fff','#138808','#FFD700','#FF6B00','#003580'];
+  for(let i=0;i<20;i++){
+    const angle=rnd(0,Math.PI*2), spd=rnd(2,7);
+    particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-4,life:1,col:cols[i%cols.length],r:rnd(3,7),isRect:true,rot:rnd(0,Math.PI),rotV:rnd(-0.2,0.2)});
+  }
+}
+
+// ─── CLOUDS ────────────────────────────────────────────────────────────────
+let clouds=[];
+function makeCloud(startX=W+80){
+  return {x:startX, y:rnd(30,160), w:rnd(55,110), spd:rnd(0.3,0.7)};
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+function initGame(){
+  const diff = DIFFICULTIES[selectedDiff];
+  score=0; lives=3; power=0; powerActive=false; powerTimer=0;
+  bgX=0; frame=0; speed=diff.speed; level=1; comboCount=0; lastPipeFrame=0;
+  bird={ x:95, y:H/2, vy:0, rotation:0, invincible:0, flapFrame:0 };
+  pipes=[]; stars=[]; coins=[]; particles=[]; floatTexts=[];
+  clouds=[];
+  for(let i=0;i<4;i++) clouds.push(makeCloud(rnd(0,W)));
+  updateHUD();
+  updateDiffBadge();
+}
+
+// ─── HUD ───────────────────────────────────────────────────────────────────
+function updateHUD(){
+  document.getElementById('scoreDisplay').textContent = score;
+  const lb = document.getElementById('livesDisplay');
+  lb.innerHTML = '';
+  for(let i=0;i<3;i++){
+    const s=document.createElement('span');
+    s.style.cssText=`font-size:20px;opacity:${i<lives?1:0.2};transition:opacity 0.3s;filter:drop-shadow(0 0 4px #f00)`;
+    s.textContent='❤️'; lb.appendChild(s);
+  }
+  const pct=Math.min(power/100,1)*100;
+  document.getElementById('powerFill').style.width=pct+'%';
+  document.getElementById('levelBadge').textContent=`LEVEL ${level}`;
+}
+
+function updateDiffBadge(){
+  const diff = DIFFICULTIES[selectedDiff];
+  const badge = document.getElementById('diffBadge');
+  badge.textContent = diff.label;
+  badge.style.cssText = `position:absolute;bottom:90px;right:14px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:1px;border:1px solid ${diff.borderColor};color:${diff.color};background:${diff.bg};`;
+}
+
+// ─── SKINS ─────────────────────────────────────────────────────────────────
+const SKINS = [
+  {
+    charName:'Anmol', name:'School Boy', body:'#fff', collar:'#003580', skin:'#F5CBA7', hair:'#1a0a00', bag:'#FF6B00', emoji:'🎒',
+    theme:{
+      sky:['#87CEEB','#FFF3C4'], nightSky:['#0a0520','#1a0a3e'],
+      ground1:'#4CAF50', ground2:'#388E3C',
+      pipeEmojis:['📚','📖','🖊️','📐','🗂️','📏','✏️','📓'],
+      pipeCols:['#FF6B00','#138808','#000080','#8B0000','#4B0082','#B8860B','#006400'],
+      capColor:'#8B4513', capDark:'#6B3410',
+      flowers:['🌸','🌺'], buildingA:'#e8c870', buildingB:'#c8a04a',
+      roofA:'#c0392b', roofB:'#a0392b', windowColor:'#87CEEB',
+      label:'School Theme', hint:'उड़ान भरो, आगे बढ़ो!'
+    }
+  },
+  {
+    charName:'Sonam', name:'School Girl', body:'#fff', collar:'#8B0080', skin:'#F5CBA7', hair:'#2c1a00', bag:'#FF69B4', emoji:'🎀',
+    theme:{
+      sky:['#FFB7D5','#FFE4F0'], nightSky:['#1a0520','#2a0a35'],
+      ground1:'#8B008B', ground2:'#6A006A',
+      pipeEmojis:['🎀','🌸','💐','📚','🦋','🌷','📖','🎨'],
+      pipeCols:['#FF69B4','#DA70D6','#FF1493','#C71585','#9932CC','#FF69B4','#DDA0DD'],
+      capColor:'#9932CC', capDark:'#6B238E',
+      flowers:['🌸','🌷'], buildingA:'#f5c2e7', buildingB:'#e8a0d0',
+      roofA:'#9932CC', roofB:'#7B238E', windowColor:'#FFB6C1',
+      label:'Princess Theme', hint:'पढ़ो, बढ़ो, चमको!'
+    }
+  },
+  {
+    charName:'Virat Kohli', name:'Cricket Star', body:'#fff', collar:'#138808', skin:'#D4A76A', hair:'#1a0a00', bag:'#228B22', emoji:'🏏',
+    theme:{
+      sky:['#90EE90','#F0FFF0'], nightSky:['#001a00','#002a05'],
+      ground1:'#1a5c1a', ground2:'#0d3d0d',
+      pipeEmojis:['🏏','🎽','🏆','⭐','🥇','🎯','🏅','🔥'],
+      pipeCols:['#006400','#228B22','#2E8B57','#3CB371','#20B2AA','#008080','#004d00'],
+      capColor:'#4a3000', capDark:'#2a1a00',
+      flowers:['🌿','🍃'], buildingA:'#c8e6c9', buildingB:'#a5d6a7',
+      roofA:'#1B5E20', roofB:'#2E7D32', windowColor:'#81C784',
+      label:'Cricket Stadium', hint:'छक्का मारो, आगे बढ़ो!'
+    }
+  },
+  {
+    charName:'Aditya', name:'Scientist', body:'#f0f8ff', collar:'#003580', skin:'#F5CBA7', hair:'#444', bag:'#6A0DAD', emoji:'🔬',
+    theme:{
+      sky:['#E0F7FA','#B2EBF2'], nightSky:['#000d1a','#001a2e'],
+      ground1:'#37474F', ground2:'#263238',
+      pipeEmojis:['⚗️','🧬','🔭','💡','⚡','🧪','🔬','🛸'],
+      pipeCols:['#00BCD4','#006064','#0097A7','#00838F','#4DD0E1','#80DEEA','#003d45'],
+      capColor:'#1a237e', capDark:'#0d1545',
+      flowers:['⚗️','💡'], buildingA:'#B0BEC5', buildingB:'#90A4AE',
+      roofA:'#1565C0', roofB:'#0D47A1', windowColor:'#80DEEA',
+      label:'Science Lab', hint:'सोचो, खोजो, जीतो!'
+    }
+  },
+  {
+    charName:'Yash', name:'Footballer', body:'#1a1a2e', collar:'#e94560', skin:'#C68642', hair:'#111', bag:'#e94560', emoji:'⚽',
+    theme:{
+      sky:['#a8edea','#fed6e3'], nightSky:['#000510','#001020'],
+      ground1:'#2d5a27', ground2:'#1a3a18',
+      pipeEmojis:['⚽','🥅','🏃','🥇','🔥','👟','🎽','🏆'],
+      pipeCols:['#e94560','#16213e','#0f3460','#533483','#e94560','#16213e','#0f3460'],
+      capColor:'#16213e', capDark:'#0a0f1e',
+      flowers:['🌿','⚽'], buildingA:'#d4edda', buildingB:'#b8dfc5',
+      roofA:'#1a3a18', roofB:'#2d5a27', windowColor:'#90EE90',
+      label:'Football Ground', hint:'गोल करो, जीत लो!'
+    }
+  },
+  {
+    charName:'Subham Raj', name:'Classical Dancer', body:'#FF6B9D', collar:'#C2185B', skin:'#E8B4A0', hair:'#1a0800', bag:'#FFD700', emoji:'💃',
+    theme:{
+      sky:['#FFDEE9','#B5FFFC'], nightSky:['#1a0030','#0d001a'],
+      ground1:'#9C27B0', ground2:'#6A1B9A',
+      pipeEmojis:['💃','🎵','🎶','🌺','✨','🎭','🪷','🌸'],
+      pipeCols:['#E91E63','#9C27B0','#673AB7','#FF4081','#F06292','#CE93D8','#BA68C8'],
+      capColor:'#4A148C', capDark:'#2D0067',
+      flowers:['🌺','🪷'], buildingA:'#F8BBD0', buildingB:'#E1BEE7',
+      roofA:'#C2185B', roofB:'#880E4F', windowColor:'#FCE4EC',
+      label:'Dance Stage', hint:'नाचो, गाओ, जीतो!'
+    }
+  },
+  {
+    charName:'Vikram', name:'Ninja', body:'#1a1a1a', collar:'#CC0000', skin:'#C68642', hair:'#000', bag:'#333', emoji:'🥷',
+    theme:{
+      sky:['#2c3e50','#4a5568'], nightSky:['#050510','#0d0d20'],
+      ground1:'#2d3436', ground2:'#1e272e',
+      pipeEmojis:['⚡','🗡️','🔥','💨','🌑','⭐','🥷','🌀'],
+      pipeCols:['#2d3436','#1e272e','#CC0000','#8B0000','#2d3436','#636e72','#1e272e'],
+      capColor:'#0d0d0d', capDark:'#050505',
+      flowers:['⭐','💫'], buildingA:'#636e72', buildingB:'#4a5568',
+      roofA:'#CC0000', roofB:'#8B0000', windowColor:'#CC0000',
+      label:'Shadow Dojo', hint:'छुपो, मारो, जीतो!'
+    }
+  },
+  {
+    charName:'Ananya', name:'Astronaut', body:'#f0f0f0', collar:'#003366', skin:'#F5CBA7', hair:'#2c1a00', bag:'#003366', emoji:'🚀',
+    theme:{
+      sky:['#0a0a2e','#1a1a4e'], nightSky:['#000005','#00000f'],
+      ground1:'#1a1a3e', ground2:'#0d0d25',
+      pipeEmojis:['🚀','⭐','🌙','🪐','🛸','💫','🌌','🔭'],
+      pipeCols:['#003366','#001a4e','#0a2a6e','#003380','#001a5e','#002255','#001133'],
+      capColor:'#001a3e', capDark:'#000d20',
+      flowers:['⭐','💫'], buildingA:'#1a1a3e', buildingB:'#0d0d2e',
+      roofA:'#003366', roofB:'#001a4e', windowColor:'#4169E1',
+      label:'Outer Space', hint:'तारों को छूओ!'
+    }
+  },
+  {
+    charName:'Kartik', name:'Chef', body:'#fff', collar:'#CC4400', skin:'#D4A76A', hair:'#1a0a00', bag:'#CC4400', emoji:'👨‍🍳',
+    theme:{
+      sky:['#FFF8E1','#FFECB3'], nightSky:['#1a0a00','#2a1000'],
+      ground1:'#795548', ground2:'#5D4037',
+      pipeEmojis:['🍕','🍜','🥘','🍛','🧁','🍱','🥗','🍲'],
+      pipeCols:['#FF6F00','#E65100','#BF360C','#FF8F00','#F57F17','#E65100','#BF360C'],
+      capColor:'#5D4037', capDark:'#3E2723',
+      flowers:['🌶️','🧅'], buildingA:'#FFCCBC', buildingB:'#FFAB91',
+      roofA:'#BF360C', roofB:'#8D1C02', windowColor:'#FFE0B2',
+      label:'Royal Kitchen', hint:'पकाओ, खिलाओ, जीतो!'
+    }
+  },
+  {
+    charName:'Anmol', name:'Developer', body:'#1e1e2e', collar:'#7c3aed', skin:'#F5CBA7', hair:'#1a0a00', bag:'#7c3aed', emoji:'💻',
+    theme:{
+      sky:['#0f0c29','#302b63'], nightSky:['#020206','#080818'],
+      ground1:'#1e1e2e', ground2:'#12121e',
+      pipeEmojis:['💻','⌨️','🖥️','🐛','⚙️','🔧','📱','🚀'],
+      pipeCols:['#7c3aed','#4f46e5','#2563eb','#7c3aed','#6d28d9','#3730a3','#1d4ed8'],
+      capColor:'#1e1e2e', capDark:'#12121e',
+      flowers:['⚡','💡'], buildingA:'#2d2b55', buildingB:'#1e1e3f',
+      roofA:'#7c3aed', roofB:'#4f46e5', windowColor:'#60a5fa',
+      label:'Code Lab', hint:'कोड लिखो, दुनिया बदलो!'
+    }
+  },
+];
+
+// ─── DRAW BIRD ──────────────────────────────────────────────────────────────
+function drawBird(){
+  const b = bird;
+  const sk = SKINS[selectedSkin];
+
+  if(b.invincible>0 && Math.floor(frame/5)%2===0) return;
+
+  ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.rotation);
+
+  // Power aura
+  if(powerActive){
+    const t = frame*0.08;
+    ctx.shadowColor='#FFD700'; ctx.shadowBlur=20;
+    for(let i=0;i<3;i++){
+      ctx.strokeStyle=`rgba(255,215,0,${0.3-i*0.08})`;
+      ctx.lineWidth=3; ctx.beginPath();
+      ctx.arc(0,0,22+i*6+Math.sin(t+i)*3,0,Math.PI*2); ctx.stroke();
+    }
+    ctx.shadowBlur=0;
+  }
+
+  const wingUp = Math.floor(frame/7)%2===0;
+
+  // Wings
+  ctx.fillStyle=sk.body;
+  ctx.strokeStyle=sk.collar; ctx.lineWidth=1.5;
+  if(wingUp){
+    ctx.beginPath(); ctx.ellipse(-16,-4,7,11,-0.5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(16,-4,7,11,0.5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.ellipse(-16,5,7,11,-0.3,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(16,5,7,11,0.3,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  }
+
+  // Body (shirt)
+  ctx.fillStyle=sk.body; ctx.strokeStyle=sk.collar; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.ellipse(0,3,15,18,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+
+  // Collar/tie stripe
+  ctx.fillStyle=sk.collar;
+  ctx.beginPath(); ctx.ellipse(0,-8,7,6,0,0,Math.PI*2); ctx.fill();
+  ctx.fillRect(-3,-8,6,14);
+
+  // Face
+  ctx.fillStyle=sk.skin;
+  ctx.beginPath(); ctx.arc(0,-15,11,0,Math.PI*2); ctx.fill();
+
+  // Eyes
+  ctx.fillStyle='#222';
+  ctx.beginPath(); ctx.arc(-3.5,-15.5,2.8,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(4,-15.5,2.8,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(-2.5,-16,1.2,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(5,-16,1.2,0,Math.PI*2); ctx.fill();
+
+  // Smile
+  ctx.strokeStyle='#8B4513'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(0,-12,4,0.1,Math.PI-0.1); ctx.stroke();
+
+  // Hair
+  ctx.fillStyle=sk.hair;
+  ctx.beginPath(); ctx.ellipse(0,-22,11,8,0,Math.PI,Math.PI*2); ctx.fill();
+  if(selectedSkin===1){ // Priya pigtails
+    ctx.beginPath(); ctx.ellipse(-12,-19,4,8,0.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(12,-19,4,8,-0.5,0,Math.PI*2); ctx.fill();
+  }
+  if(selectedSkin===3){ // Aditya glasses
+    ctx.strokeStyle='#555'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.rect(-8,-18,7,6); ctx.stroke();
+    ctx.beginPath(); ctx.rect(1,-18,7,6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-1,-15); ctx.lineTo(1,-15); ctx.stroke();
+  }
+  if(selectedSkin===9){ // Anmol Developer - headphones
+    ctx.strokeStyle='#7c3aed'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(0,-22,13,Math.PI,0); ctx.stroke();
+    ctx.fillStyle='#4f46e5';
+    ctx.beginPath(); ctx.roundRect(-14,-26,6,8,3); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(8,-26,6,8,3); ctx.fill();
+  }
+  if(selectedSkin===4){ // Yash - sports headband
+    ctx.fillStyle='#e94560';
+    ctx.fillRect(-11,-26,22,4);
+  }
+  if(selectedSkin===5){ // Subham Raj - bun / flower
+    ctx.fillStyle=sk.hair;
+    ctx.beginPath(); ctx.arc(0,-27,6,0,Math.PI*2); ctx.fill();
+    emoji('🌺',0,-30,12);
+  }
+  if(selectedSkin===6){ // Vikram - ninja headband
+    ctx.fillStyle='#CC0000';
+    ctx.fillRect(-13,-22,26,4);
+    ctx.fillStyle='#AA0000';
+    ctx.fillRect(9,-22,5,8);
+  }
+  if(selectedSkin===7){ // Ananya - no hair visible (helmet)
+    // helmet top dome
+    ctx.fillStyle='rgba(255,255,255,0.15)';
+    ctx.beginPath(); ctx.arc(0,-15,13,Math.PI,0); ctx.fill();
+  }
+  if(selectedSkin===8){ // Kartik - chef hat white (drawn in accessories)
+    // moustache
+    ctx.fillStyle='#1a0a00';
+    ctx.beginPath(); ctx.ellipse(-3,-11,4,2,0.3,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(3,-11,4,2,-0.3,0,Math.PI*2); ctx.fill();
+  }
+
+  // Character accessories (skin-specific)
+  if(selectedSkin===0){ // Arjun - School Boy: bag
+    ctx.fillStyle=sk.bag;
+    ctx.fillRect(11,-2,11,18);
+    ctx.fillStyle=lighten(sk.bag,60);
+    ctx.fillRect(12,0,9,8);
+    ctx.strokeStyle=lighten(sk.bag,-20); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(11,0); ctx.lineTo(5,-8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(11,8); ctx.lineTo(5,2); ctx.stroke();
+  } else if(selectedSkin===1){ // Priya - School Girl: bag + bow
+    ctx.fillStyle=sk.bag;
+    ctx.fillRect(11,-2,11,18);
+    ctx.fillStyle=lighten(sk.bag,60);
+    ctx.fillRect(12,0,9,8);
+    emoji('🎀',17,-6,14);
+  } else if(selectedSkin===2){ // Rohit - Cricket Star: bat
+    ctx.fillStyle='#8B4513';
+    ctx.fillRect(11,-18,5,8);
+    ctx.fillStyle='#D2691E';
+    ctx.beginPath(); ctx.roundRect(9,-10,9,22,3); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=0.8;
+    for(let li=0;li<4;li++){
+      ctx.beginPath(); ctx.moveTo(10,-8+li*5); ctx.lineTo(17,-8+li*5); ctx.stroke();
+    }
+    emoji('🏏',22,-22,12);
+  } else if(selectedSkin===3){ // Neha - Scientist: test tube
+    ctx.fillStyle='rgba(200,240,255,0.85)';
+    ctx.beginPath(); ctx.roundRect(11,-8,9,20,4); ctx.fill();
+    ctx.strokeStyle='#00BCD4'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(11,-8,9,20,4); ctx.stroke();
+    ctx.fillStyle='rgba(0,188,212,0.6)';
+    ctx.beginPath(); ctx.roundRect(12,4,7,7,3); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.beginPath(); ctx.arc(14,2,1.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(18,0,1,0,Math.PI*2); ctx.fill();
+    emoji('⚗️',16,-14,12);
+  } else if(selectedSkin===4){ // Ravi - Footballer: football at foot
+    emoji('⚽',18,14,16);
+    // shoe
+    ctx.fillStyle='#e94560';
+    ctx.beginPath(); ctx.roundRect(6,16,12,6,3); ctx.fill();
+  } else if(selectedSkin===5){ // Meera - Dancer: hand pose + dupatta
+    ctx.fillStyle='rgba(255,215,0,0.7)';
+    ctx.beginPath(); ctx.ellipse(18,-8,4,12,0.4,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#FFD700'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.ellipse(18,-8,4,12,0.4,0,Math.PI*2); ctx.stroke();
+    emoji('💃',24,-18,14);
+  } else if(selectedSkin===6){ // Vikram - Ninja: sword
+    ctx.fillStyle='#555';
+    ctx.fillRect(10,-20,3,28);
+    ctx.fillStyle='#888';
+    ctx.fillRect(7,-6,9,3);
+    ctx.fillStyle='#CC0000';
+    ctx.fillRect(10,-22,3,4);
+    ctx.fillStyle='#8B7355';
+    ctx.fillRect(10,-4,3,8);
+  } else if(selectedSkin===7){ // Ananya - Astronaut: helmet visor + jetpack
+    // helmet visor
+    ctx.fillStyle='rgba(65,105,225,0.4)';
+    ctx.beginPath(); ctx.arc(0,-15,13,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(0,-15,13,0,Math.PI*2); ctx.stroke();
+    // jetpack
+    ctx.fillStyle='#003366';
+    ctx.beginPath(); ctx.roundRect(11,0,10,16,3); ctx.fill();
+    ctx.fillStyle='#FF6600';
+    emoji('🚀',16,-20,14);
+    // jet flame
+    ctx.fillStyle='rgba(255,150,0,0.6)';
+    ctx.beginPath(); ctx.ellipse(16,18,4,6,0,0,Math.PI*2); ctx.fill();
+  } else if(selectedSkin===8){ // Kartik - Chef: ladle/pan
+    // chef toque hat (white tall hat)
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.roundRect(-8,-35,16,16,4); ctx.fill();
+    ctx.strokeStyle='#ddd'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(-8,-35,16,16,4); ctx.stroke();
+    ctx.fillStyle='#fff';
+    ctx.fillRect(-6,-25,12,12);
+    // ladle
+    ctx.fillStyle='#888';
+    ctx.fillRect(12,-10,3,22);
+    ctx.beginPath(); ctx.arc(15,-10,6,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#666';
+    ctx.beginPath(); ctx.arc(15,-10,5,0,Math.PI*2); ctx.fill();
+    emoji('🍳',20,-18,12);
+  } else if(selectedSkin===9){ // Anmol - Developer: laptop in hand
+    // Laptop screen
+    ctx.fillStyle='#1e1e2e';
+    ctx.beginPath(); ctx.roundRect(6,-16,20,14,3); ctx.fill();
+    ctx.strokeStyle='#7c3aed'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(6,-16,20,14,3); ctx.stroke();
+    // Screen glow / code lines
+    ctx.fillStyle='#60a5fa';
+    ctx.fillRect(8,-14,6,1.5);
+    ctx.fillStyle='#4ade80';
+    ctx.fillRect(8,-11,10,1.5);
+    ctx.fillStyle='#f472b6';
+    ctx.fillRect(8,-8,4,1.5);
+    // Laptop base/keyboard
+    ctx.fillStyle='#374151';
+    ctx.beginPath(); ctx.roundRect(4,-2,24,4,2); ctx.fill();
+    // Laptop hinge
+    ctx.fillStyle='#7c3aed';
+    ctx.fillRect(6,-2,20,1.5);
+    emoji('💻',26,-18,14);
+  }
+
+  ctx.restore();
+}
+function lighten(hex,amt){
+  try{
+    const n=parseInt(hex.slice(1),16);
+    const r=Math.min(255,((n>>16)&0xff)+amt);
+    const g=Math.min(255,((n>>8)&0xff)+amt);
+    const b=Math.min(255,(n&0xff)+amt);
+    return `rgb(${r},${g},${b})`;
+  } catch(e){ return hex; }
+}
+
+// ─── DRAW BG ────────────────────────────────────────────────────────────────
+function drawBg(){
+  const sk = SKINS[selectedSkin];
+  const th = sk.theme;
+  // Sky
+  const sky1 = nightMode ? th.nightSky[0] : th.sky[0];
+  const sky2 = nightMode ? th.nightSky[1] : th.sky[1];
+  const grd = ctx.createLinearGradient(0,0,0,H-55);
+  grd.addColorStop(0,sky1); grd.addColorStop(1,sky2);
+  ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
+
+  if(nightMode){
+    // Moon
+    emoji('🌕',350,55,40);
+    // Night stars
+    for(let i=0;i<30;i++){
+      const sx=((i*97+bgX*0.08)%W), sy=10+((i*53)%110);
+      const bri=0.3+Math.sin(frame*0.04+i)*0.3;
+      ctx.fillStyle=`rgba(255,255,255,${bri})`;
+      ctx.beginPath(); ctx.arc(sx,sy,1+Math.sin(i)*0.5,0,Math.PI*2); ctx.fill();
+    }
+    // Aurora effect
+    ctx.save(); ctx.globalAlpha=0.07;
+    const ag=ctx.createLinearGradient(0,0,W,0);
+    ag.addColorStop(0,'transparent'); ag.addColorStop(0.4,'#00ff88'); ag.addColorStop(0.6,'#0088ff'); ag.addColorStop(1,'transparent');
+    ctx.fillStyle=ag; ctx.fillRect(0,50+Math.sin(frame*0.01)*20,W,60); ctx.restore();
+  } else {
+    // Sun
+    ctx.fillStyle='#FFD700';
+    ctx.beginPath(); ctx.arc(350,55,30,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,215,0,0.15)';
+    ctx.beginPath(); ctx.arc(350,55,44,0,Math.PI*2); ctx.fill();
+    // Sun rays
+    ctx.save(); ctx.translate(350,55); ctx.strokeStyle='rgba(255,215,0,0.4)'; ctx.lineWidth=2;
+    for(let i=0;i<8;i++){
+      ctx.rotate(Math.PI/4); ctx.beginPath();
+      ctx.moveTo(34,0); ctx.lineTo(50,0); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Clouds
+  clouds.forEach(cl=>{
+    ctx.fillStyle=nightMode?'rgba(80,60,120,0.6)':'rgba(255,255,255,0.88)';
+    ctx.beginPath(); ctx.ellipse(cl.x,cl.y,cl.w*0.5,18,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cl.x-cl.w*0.22,cl.y+5,cl.w*0.3,14,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cl.x+cl.w*0.22,cl.y+4,cl.w*0.35,15,0,0,Math.PI*2); ctx.fill();
+  });
+
+  // Flag banner
+  ctx.strokeStyle='rgba(255,153,51,0.5)'; ctx.lineWidth=1.5; ctx.setLineDash([8,10]);
+  ctx.beginPath(); ctx.moveTo(0,28); ctx.lineTo(W,28); ctx.stroke();
+  ctx.setLineDash([]);
+  // Mini flags
+  for(let i=0;i<6;i++){
+    const fx=(i*72 - (bgX*0.3)%72)+10;
+    ctx.fillStyle='#FF9933'; ctx.fillRect(fx,22,20,8);
+    ctx.fillStyle='#fff'; ctx.fillRect(fx,30,20,8);
+    ctx.fillStyle='#138808'; ctx.fillRect(fx,38,20,8);
+    ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=0.5; ctx.strokeRect(fx,22,20,24);
+    ctx.fillStyle='#000080'; ctx.beginPath(); ctx.arc(fx+10,33,3,0,Math.PI*2); ctx.fill();
+  }
+
+  // School buildings (parallax BG)
+  drawBuildings();
+
+  // Ground
+  const gc1 = nightMode ? '#1a3a1a' : th.ground1;
+  const gc2 = nightMode ? '#0d2a0d' : th.ground2;
+  ctx.fillStyle=gc1; ctx.fillRect(0,H-55,W,28);
+  ctx.fillStyle=gc2; ctx.fillRect(0,H-28,W,28);
+  // Ground tiles
+  const tileX = (bgX*0.6)%48;
+  for(let i=-1;i<10;i++){
+    const tx=i*48-tileX;
+    ctx.strokeStyle='rgba(0,0,0,0.12)'; ctx.lineWidth=1;
+    ctx.strokeRect(tx,H-55,48,26);
+  }
+  // Ground decorations
+  for(let i=0;i<8;i++){
+    const fx=((i*60)-(bgX*0.4)%60+10)%W;
+    emoji(i%2===0?th.flowers[0]:th.flowers[1],fx,H-50,14);
+  }
+}
+
+function drawBuildings(){
+  const th = SKINS[selectedSkin].theme;
+  ctx.save(); ctx.globalAlpha=0.15;
+  const bx = (bgX*0.18)%(W+200)-100;
+  // Building A
+  ctx.fillStyle=th.buildingA;
+  ctx.fillRect(bx,H-200,100,145);
+  ctx.fillStyle=th.roofA;
+  ctx.beginPath(); ctx.moveTo(bx-10,H-200); ctx.lineTo(bx+50,H-240); ctx.lineTo(bx+110,H-200); ctx.fill();
+  ctx.fillStyle=th.windowColor;
+  [[10,H-188,22,22],[68,H-188,22,22],[10,H-158,22,22],[68,H-158,22,22]].forEach(([x,y,w,h])=>ctx.fillRect(x+bx,y,w,h));
+  ctx.fillStyle='#8B4513'; ctx.fillRect(bx+38,H-100,24,55);
+  // Building B
+  const bx2 = (bx+200)%W;
+  ctx.fillStyle=th.buildingB;
+  ctx.fillRect(bx2,H-170,80,115);
+  ctx.fillStyle=th.roofB;
+  ctx.beginPath(); ctx.moveTo(bx2-8,H-170); ctx.lineTo(bx2+40,H-205); ctx.lineTo(bx2+88,H-170); ctx.fill();
+  ctx.fillStyle=th.windowColor;
+  [[8,H-158,20,20],[52,H-158,20,20]].forEach(([x,y,w,h])=>ctx.fillRect(x+bx2,y,w,h));
+  ctx.restore();
+}
+
+// ─── DRAW PIPES ─────────────────────────────────────────────────────────────
+const BOOK_COLS = ['#FF6B00','#138808','#000080','#8B0000','#4B0082','#B8860B','#006400'];
+const PIPE_EMOJIS = ['📚','📖','🖊️','📐','🗂️','📏','✏️','📓'];
+
+function drawPipes(){
+  const th = SKINS[selectedSkin].theme;
+  pipes.forEach(p=>{
+    drawPillar(p.x, 0, p.top, p.emoji, true, th);
+    drawPillar(p.x, p.top+p.gap, H-55, p.emoji, false, th);
+  });
+}
+
+function drawPillar(px, startY, endY, emj, isTop, th){
+  const h = endY - startY;
+  if(h<=0) return;
+  const cols = th ? th.pipeCols : BOOK_COLS;
+  let y = startY, bi = 0;
+  while(y<endY){
+    const bh = Math.min(28, endY-y);
+    ctx.fillStyle = cols[bi%cols.length];
+    ctx.fillRect(px, y, PIPE_W, bh);
+    ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.lineWidth=0.5;
+    ctx.strokeRect(px, y, PIPE_W, bh);
+    if(bh>=20) emoji(emj, px+PIPE_W/2, y+bh/2, 17);
+    y+=bh; bi++;
+  }
+  // Cap
+  const capColor = th ? th.capColor : '#8B4513';
+  const capDark = th ? th.capDark : '#6B3410';
+  const capY = isTop ? endY-10 : startY-2;
+  ctx.fillStyle=capColor;
+  ctx.fillRect(px-5, capY, PIPE_W+10, 12);
+  ctx.fillStyle=capDark;
+  ctx.fillRect(px-5, capY+(isTop?8:0), PIPE_W+10, 4);
+}
+
+// ─── DRAW STARS/COINS ───────────────────────────────────────────────────────
+function drawCollectibles(){
+  stars.forEach(s=>{
+    ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(s.angle);
+    if(s.super){
+      const sc=1+Math.sin(s.pulse)*0.15;
+      ctx.scale(sc,sc); emoji('💰',0,0,28);
+    } else {
+      const sc=1+Math.sin(s.pulse)*0.12;
+      ctx.scale(sc,sc);
+      ctx.shadowColor='#FFD700'; ctx.shadowBlur=10;
+      emoji('⭐',0,0,26); ctx.shadowBlur=0;
+    }
+    ctx.restore();
+  });
+  coins.forEach(c=>{
+    ctx.save(); ctx.translate(c.x,c.y);
+    ctx.scale(Math.abs(Math.cos(c.flipAngle)),1);
+    emoji('🪙',0,0,22);
+    ctx.restore();
+  });
+}
+
+// ─── DRAW PARTICLES + FLOATS ────────────────────────────────────────────────
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.save(); ctx.globalAlpha=p.life;
+    if(p.isRect){
+      ctx.translate(p.x,p.y); ctx.rotate(p.rot||0);
+      ctx.fillStyle=p.col; ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+    } else {
+      ctx.fillStyle=p.col;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+function drawFloatTexts(){
+  floatTexts.forEach(ft=>{
+    ctx.save(); ctx.globalAlpha=ft.life;
+    ctx.font=`bold 16px 'Baloo 2'`;
+    ctx.fillStyle=ft.color; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.restore();
+  });
+}
+
+// ─── DRAW HUD ────────────────────────────────────────────────────────────────
+function drawGameHUD(){
+  // Power active glow
+  if(powerActive){
+    ctx.save(); ctx.globalAlpha=0.07+Math.sin(frame*0.15)*0.04;
+    ctx.fillStyle='#FFD700'; ctx.fillRect(0,0,W,H);
+    ctx.restore();
+    ctx.font=`bold 13px 'Baloo 2'`; ctx.fillStyle='#FFD700';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('⚡ POWER MODE ACTIVE! ⚡', W/2, H-72);
+  }
+
+  // Combo display
+  if(comboCount>=3){
+    ctx.font=`bold 18px 'Baloo 2'`; ctx.fillStyle='#FF9933';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(`🔥 ${comboCount}x COMBO!`, W/2, 56);
+  }
+}
+
+// ─── LEVEL SYSTEM ───────────────────────────────────────────────────────────
+function checkLevel(){
+  let newLevel = 1;
+  for(let i=LEVEL_SCORES.length-1;i>=0;i--){
+    if(score>=LEVEL_SCORES[i]){ newLevel=i+1; break; }
+  }
+  if(newLevel>level){
+    level=newLevel; sfxLevelUp();
+    showToast(`🎓 LEVEL ${level} — ${getLevelName(level)}!`);
+    spawnConfetti(W/2,H/2);
+    addFloat(W/2,H/2-60,`LEVEL UP! 🎉`,'#FFD700');
+    speed+=0.15 * DIFFICULTIES[selectedDiff].gravMult;
+  }
+}
+function getLevelName(l){
+  return ['','Class 1','Class 5','Class 8','Class 10','Class 12','IIT!'][Math.min(l,6)];
+}
+
+// ─── MAIN LOOP ───────────────────────────────────────────────────────────────
+function gameLoop(timestamp){
+  if(gameState!=='playing') return;
+  frame++;
+  bgX += speed;
+
+  // Update clouds
+  clouds.forEach(cl=>{ cl.x-=cl.spd; if(cl.x<-120) cl.x=W+120; });
+
+  // Bird physics
+  if(!powerActive){
+    bird.vy+=GRAVITY * DIFFICULTIES[selectedDiff].gravMult;
+    if(bird.vy>MAX_FALL) bird.vy=MAX_FALL;
+  } else {
+    bird.vy=lerp(bird.vy,0,0.12);
+    powerTimer--;
+    power=Math.max(0,power-100/POWER_DURATION);
+    if(powerTimer<=0||power<=0){ powerActive=false; showToast('⚡ Power ended!'); }
+    updateHUD();
+  }
+  bird.y+=bird.vy;
+  bird.rotation=Math.max(-0.55,Math.min(1.3,bird.vy*0.08));
+  if(bird.invincible>0) bird.invincible--;
+
+  // Spawn pipes
+  if(frame%PIPE_INTERVAL===0) spawnPipe();
+  // Spawn stars
+  if(frame%STAR_EVERY===0) spawnStar();
+  // Spawn coins
+  if(frame%COIN_EVERY===0) spawnCoin();
+
+  // Move pipes
+  const pspd = speed + score*0.018;
+  pipes.forEach(p=>p.x-=pspd);
+  pipes=pipes.filter(p=>p.x>-PIPE_W-20);
+
+  // Move stars
+  stars.forEach(s=>{ s.x-=speed*0.75; s.angle+=0.05; s.pulse+=0.12; });
+  stars=stars.filter(s=>s.x>-40);
+
+  // Move coins
+  coins.forEach(c=>{ c.x-=speed*0.7; c.y+=Math.sin(frame*0.06+c.phase)*0.6; c.flipAngle+=0.12; });
+  coins=coins.filter(c=>c.x>-40);
+
+  // Update particles
+  particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.life-=0.03; if(p.rot!=null) p.rot+=p.rotV; });
+  particles=particles.filter(p=>p.life>0);
+
+  // Update float texts
+  floatTexts.forEach(ft=>{ ft.y+=ft.vy; ft.life-=0.025; });
+  floatTexts=floatTexts.filter(ft=>ft.life>0);
+
+  // Score pipes
+  pipes.forEach(p=>{
+    if(!p.passed && bird.x>p.x+PIPE_W){
+      p.passed=true; score++;
+      if(score>hiScore){ hiScore=score; localStorage.setItem('fv_hi',hiScore); }
+      sfxScore();
+      // Combo
+      if(frame-lastPipeFrame<PIPE_INTERVAL*2) comboCount++;
+      else comboCount=1;
+      lastPipeFrame=frame;
+      const pts=comboCount>=3?comboCount:1;
+      addFloat(bird.x,bird.y-30,comboCount>=3?`+${pts} COMBO!`:`+1`,'#FFD700');
+      spawnParticles(bird.x,bird.y,'#FFD700',6,3);
+      checkLevel(); updateHUD();
+    }
+  });
+
+  // Pipe collision
+  pipes.forEach(p=>{
+    if(bird.invincible>0||powerActive) return;
+    const bx=bird.x, by=bird.y;
+    if(bx+13>p.x && bx-13<p.x+PIPE_W && (by-16<p.top || by+16>p.top+p.gap)){
+      takeDamage();
+    }
+  });
+
+  // Star collision
+  stars=stars.filter(s=>{
+    if(dist(bird.x,bird.y,s.x,s.y)<30){
+      const amt=s.super?50:20;
+      power=Math.min(100,power+amt);
+      sfxStar(); spawnParticles(s.x,s.y,'#FFD700',12,5);
+      addFloat(s.x,s.y-20,s.super?'+50 POWER!':'+20 POWER','#FFD700');
+      updateHUD(); return false;
+    }
+    return true;
+  });
+
+  // Coin collision
+  coins=coins.filter(c=>{
+    if(dist(bird.x,bird.y,c.x,c.y)<28){
+      sfxStar(); spawnParticles(c.x,c.y,'#FFA500',8,4);
+      addFloat(c.x,c.y-20,'+🪙 COIN','#FFA500');
+      return false;
+    }
+    return true;
+  });
+
+  // Ground/ceiling
+  if(bird.y>H-55-16){ bird.y=H-55-16; takeDamage(); }
+  if(bird.y<14){ bird.y=14; bird.vy=2; }
+
+  // Draw everything
+  ctx.clearRect(0,0,W,H);
+  drawBg();
+  drawPipes();
+  drawCollectibles();
+  drawBird();
+  drawParticles();
+  drawFloatTexts();
+  drawGameHUD();
+
+  animId=requestAnimationFrame(gameLoop);
+}
+
+// ─── SPAWN ───────────────────────────────────────────────────────────────────
+function spawnPipe(){
+  const baseGap = Math.max(118, PIPE_GAP_BASE - score*0.8);
+  const gap = Math.round(baseGap * DIFFICULTIES[selectedDiff].gapMult);
+  const top = rnd(80, H-gap-90);
+  const thEmojis = SKINS[selectedSkin].theme.pipeEmojis;
+  const emj = thEmojis[Math.floor(Math.random()*thEmojis.length)];
+  pipes.push({x:W+10, top, gap, passed:false, emoji:emj});
+}
+function spawnStar(){
+  const isSuper=Math.random()<0.12;
+  stars.push({x:W+10, y:rnd(80,H-100), angle:0, pulse:0, super:isSuper});
+}
+function spawnCoin(){
+  coins.push({x:W+10, y:rnd(90,H-110), flipAngle:0, phase:rnd(0,Math.PI*2)});
+}
+
+// ─── DAMAGE ─────────────────────────────────────────────────────────────────
+function takeDamage(){
+  if(bird.invincible>0||powerActive) return;
+  sfxHit(); lives--;
+  spawnParticles(bird.x,bird.y,'#FF0000',15,6);
+  updateHUD();
+  if(lives<=0){ triggerGameOver(); return; }
+  bird.invincible=100; bird.vy=-5;
+  showToast(`💔 ${lives} ${lives===1?'life':'lives'} left!`);
+}
+
+// ─── JUMP ────────────────────────────────────────────────────────────────────
+function doJump(){
+  if(gameState==='idle'||gameState==='dead') return;
+  if(gameState==='playing'){
+    bird.vy=JUMP_VEL; sfxJump();
+    spawnParticles(bird.x,bird.y+14,'rgba(255,255,255,0.7)',5,2);
+  }
+}
+
+function activatePower(){
+  if(power>=25&&!powerActive&&gameState==='playing'){
+    powerActive=true; powerTimer=POWER_DURATION;
+    sfxPower(); spawnConfetti(bird.x,bird.y);
+    showToast('⚡ POWER MODE! TAP TO GUIDE!');
+  } else if(power<25){
+    showToast('⭐ Collect stars for power!');
+  }
+}
+
+// ─── GAME OVER ───────────────────────────────────────────────────────────────
+function triggerGameOver(){
+  gameState='dead';
+  cancelAnimationFrame(animId);
+  sfxDie(); spawnConfetti(bird.x,bird.y);
+
+  // Save leaderboard
+  leaderboard.push(score);
+  leaderboard.sort((a,b)=>b-a);
+  leaderboard=leaderboard.slice(0,5);
+  localStorage.setItem('fv_lb',JSON.stringify(leaderboard));
+
+  // Medal
+  let medal='💀', title='Game Over!', sub='Phir koshish karo!';
+  if(score>=80){ medal='🏆'; title='CHAMPION!'; sub='Jai Hind! Outstanding!'; }
+  else if(score>=50){ medal='🥇'; title='Excellent!'; sub='Bahut acha! Keep it up!'; }
+  else if(score>=30){ medal='🥈'; title='Great Job!'; sub='Shaabaash! Almost there!'; }
+  else if(score>=15){ medal='🥉'; title='Good Try!'; sub='Practice makes perfect!'; }
+  else if(score>=5){ medal='📚'; title='Keep Trying!'; sub='Study more, fly better!'; }
+
+  document.getElementById('medalDisplay').textContent=medal;
+  document.getElementById('gameOverTitle').textContent=title;
+  document.getElementById('gameOverSub').textContent=sub;
+  document.getElementById('finalScore').textContent=score;
+  document.getElementById('bestScore').textContent=hiScore;
+
+  // Leaderboard
+  const lbSection = document.getElementById('leaderboardSection');
+  lbSection.innerHTML=`<div style="color:#aaa;font-size:11px;margin-bottom:6px;letter-spacing:1px">🏆 TOP SCORES</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+    ${leaderboard.map((s,i)=>`<span style="background:rgba(255,215,0,${0.15-i*0.02});border:1px solid rgba(255,215,0,0.3);color:#FFD700;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:700">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]} ${s}</span>`).join('')}
+    </div>`;
+
+  document.getElementById('gameOverOverlay').style.display='flex';
+  document.getElementById('skinPanel').style.display='flex';
+  updateProfileCard();
+}
+
+// ─── START ───────────────────────────────────────────────────────────────────
+function startGame(){
+  document.getElementById('startOverlay').style.display='none';
+  document.getElementById('gameOverOverlay').style.display='none';
+  document.getElementById('skinPanel').style.display='none';
+  document.getElementById('profileOverlay').style.display='none';
+  initGame(); gameState='playing';
+  animId=requestAnimationFrame(gameLoop);
+}
+
+// ─── IDLE ANIMATION ─────────────────────────────────────────────────────────
+function idleLoop(){
+  if(gameState!=='idle'&&gameState!=='dead') return;
+  frame++; bgX+=1.2;
+  clouds.forEach(cl=>{ cl.x-=cl.spd; if(cl.x<-120) cl.x=W+120; });
+  bird.y=H/2+Math.sin(frame*0.03)*18;
+  bird.rotation=Math.sin(frame*0.03)*0.15;
+  ctx.clearRect(0,0,W,H);
+  drawBg(); drawBird();
+  requestAnimationFrame(idleLoop);
+}
+
+// ─── CONTROLS ────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); doJump(); }
+  if(e.code==='ShiftLeft'||e.code==='ShiftRight'){ activatePower(); }
+  if(e.code==='KeyP'||e.code==='Escape'){ togglePause(); }
+  if(e.code==='KeyM'){ soundOn=!soundOn; showToast(soundOn?'🔊 Sound ON':'🔇 Sound OFF'); }
+  if(e.code==='KeyS'){ cycleSkin(); }
+});
+canvas.addEventListener('click',()=>{ if(gameState==='playing') doJump(); });
+canvas.addEventListener('touchstart',e=>{ e.preventDefault(); if(gameState==='playing') doJump(); },{passive:false});
+
+// ─── PROFILE SYSTEM ────────────────────────────────────────────────────────
+let playerProfile = JSON.parse(localStorage.getItem('fv_profile')||'null');
+
+function calcAge(dob){
+  if(!dob) return null;
+  const today = new Date();
+  const birth = new Date(dob);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if(m<0||(m===0&&today.getDate()<birth.getDate())) age--;
+  return age>=0 ? age : null;
+}
+
+function formatDob(dob){
+  if(!dob) return '';
+  const d = new Date(dob);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+document.getElementById('profileDob').max = new Date().toISOString().split('T')[0];
+
+document.getElementById('profileDob').addEventListener('change',function(){
+  const age = calcAge(this.value);
+  document.getElementById('ageDisplay').textContent = age!==null ? `🎂 Age: ${age} years` : '';
+});
+
+document.getElementById('profileSaveBtn').addEventListener('click',()=>{
+  const name = document.getElementById('profileName').value.trim();
+  const dob = document.getElementById('profileDob').value;
+  if(!name){ document.getElementById('profileName').focus(); return; }
+  const age = calcAge(dob);
+  playerProfile = {name, dob, age};
+  localStorage.setItem('fv_profile', JSON.stringify(playerProfile));
+  updateProfileCard();
+  document.getElementById('profileOverlay').style.display='none';
+  document.getElementById('startOverlay').style.display='flex';
+});
+
+function updateProfileCard(){
+  if(!playerProfile) return;
+  const sk = SKINS[selectedSkin];
+  document.getElementById('profileCardAvatar').textContent = sk.emoji;
+  document.getElementById('profileCardName').textContent = playerProfile.name;
+  const meta = [];
+  if(playerProfile.dob) meta.push(`DOB: ${formatDob(playerProfile.dob)}`);
+  if(playerProfile.age!=null) meta.push(`Age: ${playerProfile.age} yrs`);
+  document.getElementById('profileCardMeta').textContent = meta.join('  •  ') || 'Tap to edit profile';
+}
+
+// Build char picker row dynamically
+function buildCharPicker(){
+  const row = document.getElementById('charPickerRow');
+  row.innerHTML = '';
+  SKINS.forEach((sk,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'charPickBtn' + (i===selectedSkin?' active':'');
+    btn.dataset.skin = i;
+    btn.innerHTML = `<span class="charPickEmoji">${sk.emoji}</span><span class="charPickCharName">${sk.charName}</span><span class="charPickName">${sk.name}</span>`;
+    btn.addEventListener('click',()=>{
+      selectedSkin = i;
+      document.querySelectorAll('.charPickBtn').forEach((b,j)=>b.classList.toggle('active',j===i));
+      document.querySelectorAll('.skinBtn').forEach((b,j)=>b.classList.toggle('active',j===i));
+      updateHomeTheme();
+      updateProfileCard();
+      showToast(`${sk.emoji} ${sk.charName} — ${sk.name}!`);
+    });
+    row.appendChild(btn);
+  });
+}
+
+// Home character picker
+function updateHomeTheme(){
+  const sk = SKINS[selectedSkin];
+  document.getElementById('homeMedal').textContent = sk.emoji;
+  document.getElementById('homeHindi').textContent = sk.theme.hint;
+  document.getElementById('homeSubLabel').textContent = sk.theme.label;
+  document.querySelectorAll('.skinBtn').forEach((b,i)=>b.classList.toggle('active',i===selectedSkin));
+}
+
+document.getElementById('startBtn').addEventListener('click',startGame);
+document.getElementById('restartBtn').addEventListener('click',startGame);
+
+document.getElementById('nightToggle').addEventListener('click',()=>{
+  nightMode=!nightMode;
+  document.getElementById('nightToggle').textContent=nightMode?'☀️ Day':'🌙 Night';
+});
+
+// Skin buttons (in-game panel)
+document.querySelectorAll('.skinBtn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    selectedSkin=+btn.dataset.skin;
+    document.querySelectorAll('.skinBtn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.charPickBtn').forEach((b,i)=>b.classList.toggle('active',i===selectedSkin));
+    btn.classList.add('active');
+    updateHomeTheme();
+    updateProfileCard();
+    showToast(`${SKINS[selectedSkin].charName}: ${SKINS[selectedSkin].name} ${SKINS[selectedSkin].emoji}`);
+  });
+});
+
+function cycleSkin(){
+  selectedSkin=(selectedSkin+1)%SKINS.length;
+  document.querySelectorAll('.skinBtn').forEach((b,i)=>b.classList.toggle('active',i===selectedSkin));
+  document.querySelectorAll('.charPickBtn').forEach((b,i)=>b.classList.toggle('active',i===selectedSkin));
+  updateHomeTheme();
+  updateProfileCard();
+  showToast(`${SKINS[selectedSkin].charName}: ${SKINS[selectedSkin].name} ${SKINS[selectedSkin].emoji}`);
+}
+
+function togglePause(){
+  if(gameState==='playing'){
+    gameState='paused'; cancelAnimationFrame(animId);
+    document.getElementById('pauseOverlay').style.display='flex';
+  } else if(gameState==='paused'){
+    gameState='playing';
+    document.getElementById('pauseOverlay').style.display='none';
+    animId=requestAnimationFrame(gameLoop);
+  }
+}
+
+// ─── BOOT ────────────────────────────────────────────────────────────────────
+frame=0; bgX=0; speed=DIFFICULTIES[selectedDiff].speed;
+clouds=[]; for(let i=0;i<4;i++) clouds.push(makeCloud(rnd(0,W)));
+bird={x:95,y:H/2,vy:0,rotation:0,invincible:0,flapFrame:0};
+particles=[]; floatTexts=[];
+document.getElementById('skinPanel').style.display='flex';
+buildCharPicker();
+updateHomeTheme();
+
+// ─── DIFFICULTY BUTTONS ───────────────────────────────────────────────────────
+document.querySelectorAll('.diffBtn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    selectedDiff = btn.dataset.diff;
+    document.querySelectorAll('.diffBtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const diff = DIFFICULTIES[selectedDiff];
+    const msgs = {
+      easy:'🐢 Easy — Relax and enjoy!',
+      medium:'🦊 Medium — Normal challenge!',
+      hard:'🐆 Hard — Fast & tricky!',
+      extreme:'🔥 EXTREME — Good luck! 😈'
+    };
+    showToast(msgs[selectedDiff]);
+    updateDiffBadge();
+  });
+});
+updateDiffBadge();
+
+// Profile flow
+if(playerProfile){
+  // returning player — pre-fill form and go to start
+  document.getElementById('profileName').value = playerProfile.name || '';
+  document.getElementById('profileDob').value = playerProfile.dob || '';
+  if(playerProfile.dob){
+    const age = calcAge(playerProfile.dob);
+    document.getElementById('ageDisplay').textContent = age!==null ? `🎂 Age: ${age} years` : '';
+  }
+  updateProfileCard();
+  document.getElementById('profileOverlay').style.display='none';
+  document.getElementById('startOverlay').style.display='flex';
+} else {
+  document.getElementById('profileOverlay').style.display='flex';
+  document.getElementById('startOverlay').style.display='none';
+}
+
+gameState='idle'; idleLoop();
+</script>
+</body>
+</html>
