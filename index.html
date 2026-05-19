@@ -440,8 +440,163 @@
     animation:hsBurst 1.2s ease forwards; white-space:nowrap; z-index:60;
   }
 
-  /* ── CLOSE CALL FLASH ── */
-  @keyframes closeCall {
+  /* ── MYSTERY BOX ── */
+  @keyframes boxSpin {
+    0%   { transform:translateX(-50%) rotate(0deg) scale(1); }
+    25%  { transform:translateX(-50%) rotate(90deg) scale(1.1); }
+    50%  { transform:translateX(-50%) rotate(180deg) scale(1); }
+    75%  { transform:translateX(-50%) rotate(270deg) scale(1.1); }
+    100% { transform:translateX(-50%) rotate(360deg) scale(1); }
+  }
+  @keyframes rewardPop {
+    0%   { opacity:0; transform:translate(-50%,-50%) scale(0.3) rotate(-10deg); }
+    60%  { opacity:1; transform:translate(-50%,-50%) scale(1.2) rotate(5deg); }
+    80%  { transform:translate(-50%,-50%) scale(0.95) rotate(-2deg); }
+    100% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
+  }
+  #mysteryReward {
+    position:absolute; top:45%; left:50%;
+    font-size:32px; font-weight:800;
+    pointer-events:none; opacity:0; z-index:65;
+    white-space:nowrap; text-align:center;
+    text-shadow:0 0 20px #FFD700, 0 0 40px rgba(255,107,0,0.7);
+  }
+  #mysteryReward.show { animation:rewardPop 1.2s ease forwards; }
+
+  /* ── FEVER MODE ── */
+  @keyframes feverPulse {
+    0%,100% { opacity:0.06; }
+    50%      { opacity:0.14; }
+  }
+  @keyframes feverBanner {
+    0%   { opacity:0; transform:translateX(-50%) scaleX(0.3); }
+    40%  { opacity:1; transform:translateX(-50%) scaleX(1.05); }
+    60%  { transform:translateX(-50%) scaleX(0.98); }
+    100% { opacity:1; transform:translateX(-50%) scaleX(1); }
+  }
+  #feverOverlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    border-radius:16px; pointer-events:none; z-index:5;
+    opacity:0; background:radial-gradient(ellipse at center,rgba(255,60,0,0.18) 0%,transparent 70%);
+  }
+  #feverOverlay.active { animation:feverPulse 0.5s ease-in-out infinite; }
+  #feverBanner {
+    position:absolute; top:22%; left:50%;
+    background:linear-gradient(135deg,#FF0000,#FF6B00,#FFD700);
+    color:#fff; font-size:20px; font-weight:800;
+    padding:6px 22px; border-radius:30px; opacity:0;
+    pointer-events:none; white-space:nowrap; z-index:56;
+    text-shadow:0 2px 4px rgba(0,0,0,0.4); letter-spacing:2px;
+    box-shadow:0 0 30px rgba(255,107,0,0.8);
+  }
+  #feverBanner.show { animation:feverBanner 0.5s ease forwards; }
+  #feverBanner.hide { animation:feverBanner 0.3s ease reverse forwards; }
+
+  /* ── WAVE BOSS ── */
+  @keyframes waveBoss {
+    0%   { opacity:0; transform:translateX(-50%) translateY(-30px) scale(0.5); }
+    50%  { opacity:1; transform:translateX(-50%) translateY(0) scale(1.08); }
+    70%  { transform:translateX(-50%) scale(1); }
+    85%  { opacity:1; }
+    100% { opacity:0; transform:translateX(-50%) translateY(-10px); }
+  }
+  #waveBossEl {
+    position:absolute; top:18%; left:50%;
+    font-size:22px; font-weight:800; color:#f87171;
+    text-shadow:0 0 20px #ff0000, 0 0 40px rgba(255,0,0,0.5);
+    pointer-events:none; opacity:0; z-index:57;
+    white-space:nowrap; letter-spacing:2px;
+  }
+  #waveBossEl.show { animation:waveBoss 2.5s ease forwards; }
+
+  /* ── MULTIPLIER BADGE ── */
+  #multiBadge {
+    position:absolute; bottom:95px; left:50%; transform:translateX(-50%);
+    font-size:13px; font-weight:800; color:#FF4444;
+    background:rgba(255,0,0,0.15); border:1.5px solid rgba(255,68,68,0.5);
+    border-radius:14px; padding:2px 10px;
+    pointer-events:none; opacity:0; transition:opacity 0.3s;
+    white-space:nowrap; z-index:50;
+  }
+  #multiBadge.show { opacity:1; }
+
+  /* ── LIFE HEART PICKUP ── */
+  @keyframes heartFloat {
+    0%   { transform:translateX(-50%) scale(0.5) rotate(-15deg); opacity:0; }
+    30%  { transform:translateX(-50%) scale(1.3) rotate(5deg);  opacity:1; }
+    70%  { transform:translateX(-50%) scale(1)   rotate(0deg);  opacity:1; }
+    100% { transform:translateX(-50%) scale(0.8) rotate(10deg); opacity:0; }
+  }
+  #lifePickupEl {
+    position:absolute; top:30%; left:50%;
+    font-size:42px; pointer-events:none; opacity:0; z-index:66;
+    filter:drop-shadow(0 0 16px #FF4444) drop-shadow(0 0 30px rgba(255,68,68,0.5));
+  }
+  #lifePickupEl.show { animation:heartFloat 1.4s ease forwards; }
+
+  /* ── EXTRA LIFE MODAL ── */
+  @keyframes extraLifeIn {
+    0%   { opacity:0; transform:translate(-50%,-50%) scale(0.4) rotate(-8deg); }
+    60%  { opacity:1; transform:translate(-50%,-50%) scale(1.08) rotate(2deg); }
+    100% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0); }
+  }
+  #extraLifeModal {
+    position:absolute; top:50%; left:50%;
+    background:linear-gradient(135deg,#1a0030,#2d0050);
+    border:2.5px solid #FFD700; border-radius:20px;
+    padding:18px 22px; text-align:center;
+    pointer-events:all; z-index:80;
+    box-shadow:0 0 40px rgba(255,215,0,0.4);
+    display:none; min-width:210px;
+  }
+  #extraLifeModal.show { animation:extraLifeIn 0.5s cubic-bezier(.17,.67,.49,1.3) both; }
+  #extraLifeModal .elm-icon  { font-size:48px; display:block; margin-bottom:5px; }
+  #extraLifeModal .elm-title { font-size:17px; font-weight:800; color:#FFD700; margin-bottom:3px; }
+  #extraLifeModal .elm-sub   { font-size:10px; color:rgba(255,255,255,0.55); margin-bottom:10px; }
+  #extraLifeModal .elm-timer { font-size:26px; font-weight:800; color:#FF4444; margin-bottom:10px; }
+  .elm-btn { padding:8px 18px; border-radius:12px; font-size:13px; font-weight:800;
+    cursor:pointer; border:none; font-family:'Baloo 2',cursive; transition:all 0.15s;
+    -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+  #elmYesBtn { background:linear-gradient(135deg,#FF6B00,#FFD700); color:#fff; margin-right:6px; }
+  #elmNoBtn  { background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.55); border:1px solid rgba(255,255,255,0.15); }
+  .elm-btn:active { transform:scale(0.93); }
+
+  /* ── MUSIC BADGE ── */
+  @keyframes noteFloat {
+    0%   { opacity:0; transform:translateY(0) scale(0.7); }
+    20%  { opacity:1; transform:translateY(-6px) scale(1.1); }
+    80%  { opacity:0.7; transform:translateY(-16px); }
+    100% { opacity:0; transform:translateY(-24px) scale(0.8); }
+  }
+  #musicBadge {
+    position:absolute; top:44px; right:10px;
+    font-size:9px; font-weight:700; color:#FFD700;
+    background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3);
+    border-radius:10px; padding:2px 7px; pointer-events:none; letter-spacing:0.5px;
+    opacity:0; transition:opacity 0.4s;
+  }
+  #musicBadge.visible { opacity:1; }
+  .music-note-float {
+    position:absolute; pointer-events:none; z-index:52;
+    font-size:16px; animation:noteFloat 1.2s ease forwards;
+  }
+
+  /* ── TIME FREEZE ── */
+  @keyframes freezePulse { 0%,100%{opacity:0.05;} 50%{opacity:0.18;} }
+  #freezeOverlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background:rgba(100,200,255,0.1); border-radius:16px;
+    pointer-events:none; z-index:4; opacity:0;
+  }
+  #freezeOverlay.active { animation:freezePulse 0.8s ease-in-out infinite; }
+  #freezeTimerEl {
+    position:absolute; top:46px; left:50%; transform:translateX(-50%);
+    font-size:11px; font-weight:800; color:#60a5fa;
+    background:rgba(0,30,60,0.7); border:1px solid rgba(96,165,250,0.4);
+    border-radius:10px; padding:2px 9px; pointer-events:none;
+    letter-spacing:1px; opacity:0; transition:opacity 0.3s; white-space:nowrap;
+  }
+  #freezeTimerEl.visible { opacity:1; }
     0%   { opacity:0; transform:translateX(-50%) scale(0.6); }
     30%  { opacity:1; transform:translateX(-50%) scale(1.15); }
     70%  { opacity:1; transform:translateX(-50%) scale(1); }
@@ -507,8 +662,33 @@
     #mobileControls { display:flex; }
   }
   @media (hover:none) and (pointer:coarse) {
-    /* always show on touch devices */
     #mobileControls { display:flex; }
+  }
+  /* Very small phones (320-360px) */
+  @media (max-width: 360px) {
+    .overlay h1 { font-size:20px; }
+    .overlay .sub { font-size:10px; }
+    .overlay .hindi { font-size:12px; }
+    #homeStats { gap:6px; }
+    .hstat { padding:4px 7px; min-width:50px; }
+    .hstat .hv { font-size:15px; }
+    .hstat .hl { font-size:7px; }
+    .diffBtn { min-width:54px; padding:4px 6px; }
+    .go-btn-row { flex-direction:column; gap:8px; }
+    .bigBtn { padding:10px 20px; font-size:14px; }
+    .go-meta-row { gap:6px; }
+    .go-meta-box { min-width:64px; padding:6px 8px; }
+    #rankBadge { font-size:10px; padding:3px 9px; }
+    .charPickBtn { min-width:54px; }
+  }
+  /* Landscape on phones */
+  @media (max-height: 480px) and (orientation: landscape) {
+    .overlay { justify-content:flex-start; padding-top:8px; overflow-y:auto; }
+    .overlay h1 { font-size:18px; margin-bottom:2px; }
+    .medaFl, .medal { font-size:28px; margin-bottom:2px; }
+    #homeStats { margin-bottom:6px; }
+    .scores-row { margin-bottom:6px; }
+    #charPickerRow { max-width:98vw; }
   }
 </style>
 </head>
@@ -551,6 +731,39 @@
       <button class="skinBtn" data-skin="8" title="Kartik">👨‍🍳</button>
       <button class="skinBtn" data-skin="9" title="Anmol">💻</button>
     </div>
+
+    <!-- Music Badge -->
+    <div id="musicBadge">🎵 —</div>
+
+    <!-- Freeze overlay + timer -->
+    <div id="freezeOverlay"></div>
+    <div id="freezeTimerEl">❄️ TIME FREEZE!</div>
+
+    <!-- Life Heart Pickup flash -->
+    <div id="lifePickupEl">❤️</div>
+
+    <!-- Extra Life Modal (mid-game popup) -->
+    <div id="extraLifeModal">
+      <span class="elm-icon">❤️</span>
+      <div class="elm-title">Extra Life!</div>
+      <div class="elm-sub">You've earned a life chance!<br>Collect it before time runs out!</div>
+      <div class="elm-timer" id="elmCountdown">5</div>
+      <div>
+        <button class="elm-btn" id="elmYesBtn">✅ TAKE IT!</button>
+        <button class="elm-btn" id="elmNoBtn">❌ Skip</button>
+      </div>
+    </div>
+
+    <!-- Fever Mode -->
+    <div id="feverOverlay"></div>
+    <div id="feverBanner">🔥 FEVER MODE! 2× SCORE! 🔥</div>
+    <div id="multiBadge">✖2 FEVER</div>
+
+    <!-- Wave Boss -->
+    <div id="waveBossEl">⚠️ WAVE INCOMING! ⚠️</div>
+
+    <!-- Mystery Box Reward -->
+    <div id="mysteryReward"></div>
 
     <!-- Close Call Flash -->
     <div id="closeCallEl">😱 CLOSE CALL!</div>
@@ -872,6 +1085,125 @@ function sfxStar(){ playTone(900,'sine',0.06,0.25); playTone(1200,'sine',0.08,0.
 function sfxPower(){ for(let i=0;i<6;i++) playTone(400+i*120,'sine',0.12,0.2,i*0.07); }
 function sfxLevelUp(){ [523,659,784,1047].forEach((f,i)=>playTone(f,'triangle',0.15,0.25,i*0.1)); }
 function sfxDie(){ [300,250,200,150,100].forEach((f,i)=>playTone(f,'sawtooth',0.2,0.3,i*0.12)); }
+function sfxExtraLife(){ [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'sine',0.18,0.28,i*0.08)); }
+function sfxFreeze(){ [880,660,440,330].forEach((f,i)=>playTone(f,'triangle',0.15,0.22,i*0.07)); }
+
+// ─── BACKGROUND MUSIC ENGINE ───────────────────────────────────────────────
+// Each skin gets a unique melody pattern (notes in Hz) and rhythm feel
+const SKIN_MUSIC = [
+  // 0 Anmol – School Boy: cheerful do-re-mi school bell melody
+  { name:'School Bell 🔔', bpm:108, notes:[523,587,659,523, 659,784,784,0, 698,784,880,784, 659,523,0,0], wave:'triangle', vol:0.055 },
+  // 1 Sonam – School Girl: playful girly tune
+  { name:'Fairy Dance 🎀', bpm:120, notes:[784,880,988,1047, 988,880,784,0, 659,698,784,880, 784,659,0,0], wave:'sine', vol:0.05 },
+  // 2 Virat – Cricket Star: energetic victory march
+  { name:'Victory March 🏏', bpm:132, notes:[392,523,659,784, 784,659,523,392, 523,659,784,880, 784,523,0,0], wave:'square', vol:0.04 },
+  // 3 Aditya – Scientist: electronic blips
+  { name:'Lab Blips ⚗️', bpm:140, notes:[440,550,660,770, 880,770,660,550, 440,660,880,660, 550,440,0,0], wave:'square', vol:0.038 },
+  // 4 Yash – Footballer: pumping stadium beat
+  { name:'Stadium 🥅', bpm:148, notes:[294,392,494,587, 659,587,494,392, 294,392,494,659, 587,494,0,0], wave:'sawtooth', vol:0.035 },
+  // 5 Subham – Classical Dancer: raga-inspired flowing melody
+  { name:'Raga Flow 💃', bpm:96, notes:[261,294,349,392, 440,392,349,294, 261,349,440,392, 349,294,261,0], wave:'sine', vol:0.055 },
+  // 6 Vikram – Ninja: dark stealthy pulse
+  { name:'Shadow Pulse 🥷', bpm:152, notes:[220,247,220,196, 220,247,294,220, 196,220,247,220, 196,165,0,0], wave:'sawtooth', vol:0.04 },
+  // 7 Ananya – Astronaut: ethereal space melody
+  { name:'Space Dream 🚀', bpm:88, notes:[349,392,440,494, 523,494,440,392, 349,440,523,494, 440,349,0,0], wave:'sine', vol:0.05 },
+  // 8 Kartik – Chef: upbeat kitchen rhythm
+  { name:'Kitchen Beat 👨‍🍳', bpm:128, notes:[329,370,415,440, 494,440,415,370, 329,415,494,440, 415,329,0,0], wave:'triangle', vol:0.05 },
+  // 9 Developer – Lo-fi code beat
+  { name:'Lo-fi Code 💻', bpm:90, notes:[220,261,294,329, 349,329,294,261, 220,294,349,329, 294,220,0,0], wave:'triangle', vol:0.045 },
+];
+
+let bgMusic = { playing:false, stepIndex:0, nextBeat:0, gainNode:null, skinIndex:-1 };
+
+function startBgMusic(skinIdx){
+  if(!soundOn) return;
+  if(bgMusic.playing && bgMusic.skinIndex===skinIdx) return; // already playing right track
+  stopBgMusic();
+  bgMusic.skinIndex = skinIdx;
+  bgMusic.stepIndex = 0;
+  bgMusic.playing = true;
+  const m = SKIN_MUSIC[skinIdx];
+  updateMusicBadge(m.name);
+  scheduleBgBeats(m);
+}
+
+function scheduleBgBeats(m){
+  if(!bgMusic.playing || !soundOn) return;
+  const a = getAC();
+  const now = a.currentTime;
+  const secPerBeat = 60 / m.bpm / 4; // 16th-note grid
+  if(bgMusic.nextBeat < now) bgMusic.nextBeat = now;
+
+  // Schedule 16 notes ahead
+  for(let i=0;i<16;i++){
+    const t = bgMusic.nextBeat + i*secPerBeat;
+    const noteIdx = (bgMusic.stepIndex + i) % m.notes.length;
+    const freq = m.notes[noteIdx];
+    if(freq > 0){
+      try {
+        const osc = a.createOscillator();
+        const g   = a.createGain();
+        osc.connect(g); g.connect(a.destination);
+        osc.type = m.wave;
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(m.vol, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + secPerBeat * 0.7);
+        osc.start(t);
+        osc.stop(t + secPerBeat * 0.8);
+      } catch(e){}
+    }
+  }
+  bgMusic.stepIndex = (bgMusic.stepIndex + 16) % m.notes.length;
+  bgMusic.nextBeat += 16 * secPerBeat;
+
+  // Schedule next batch
+  const msUntilNext = (bgMusic.nextBeat - a.currentTime) * 1000 - 200;
+  bgMusic._timer = setTimeout(()=>{
+    if(bgMusic.playing && soundOn) scheduleBgBeats(m);
+  }, Math.max(50, msUntilNext));
+}
+
+function stopBgMusic(){
+  bgMusic.playing = false;
+  bgMusic.skinIndex = -1;
+  clearTimeout(bgMusic._timer);
+  hideMusicBadge();
+}
+
+function pauseBgMusic(){
+  bgMusic.playing = false;
+  clearTimeout(bgMusic._timer);
+}
+
+function resumeBgMusic(){
+  if(!soundOn) return;
+  const m = SKIN_MUSIC[bgMusic.skinIndex >= 0 ? bgMusic.skinIndex : selectedSkin];
+  bgMusic.playing = true;
+  bgMusic.nextBeat = 0;
+  scheduleBgBeats(m);
+}
+
+function updateMusicBadge(name){
+  const el = document.getElementById('musicBadge');
+  if(el){ el.textContent = '🎵 '+name; el.classList.add('visible'); }
+  // Float music note
+  spawnMusicNote();
+}
+function hideMusicBadge(){
+  const el = document.getElementById('musicBadge');
+  if(el) el.classList.remove('visible');
+}
+function spawnMusicNote(){
+  const notes = ['♩','♪','♫','♬','🎵'];
+  const el = document.createElement('div');
+  el.className = 'music-note-float';
+  el.textContent = notes[Math.floor(Math.random()*notes.length)];
+  el.style.left  = (60+Math.random()*300)+'px';
+  el.style.top   = (Math.random()*200+100)+'px';
+  el.style.color = `hsl(${Math.random()*60+30},100%,70%)`;
+  document.getElementById('gameContainer').appendChild(el);
+  setTimeout(()=>el.remove(), 1250);
+}
 
 // ─── UTILS ─────────────────────────────────────────────────────────────────
 function lerp(a,b,t){ return a+(b-a)*t; }
@@ -925,6 +1257,18 @@ function initGame(){
   bird={ x:95, y:H/2, vy:0, rotation:0, invincible:0, flapFrame:0 };
   pipes=[]; stars=[]; coins=[]; particles=[]; floatTexts=[];
   birdTrail=[]; bonusRainCounter=0; lastCloseCall=0;
+  mysteryBoxes=[]; mysteryBoxCounter=0;
+  feverMode=false; scoreMultiplier=1; consecutivePipes=0;
+  waveActive=false; wavePipesLeft=0; waveFired=new Set();
+  ghostFrame=0;
+  hearts=[]; pipesSinceHeart=0;
+  freezeUps=[]; freezeActive=false; freezeTimer=0; pipesSinceFreeze=0;
+  extraLifeModalActive=false; clearInterval(extraLifeTimer);
+  document.getElementById('extraLifeModal').style.display='none';
+  document.getElementById('feverOverlay').classList.remove('active');
+  document.getElementById('multiBadge').classList.remove('show');
+  document.getElementById('freezeOverlay').classList.remove('active');
+  document.getElementById('freezeTimerEl').classList.remove('visible');
   const szBar = document.getElementById('safeZoneBar');
   if(szBar) szBar.style.display='none';
   clouds=[];
@@ -1519,14 +1863,35 @@ function gameLoop(timestamp){
   if(frame%PIPE_INTERVAL===0) spawnPipe();
   if(frame%STAR_EVERY===0) spawnStar();
   if(frame%COIN_EVERY===0) spawnCoin();
+  // Wave boss: tighter pipe spacing
+  const effectivePipeInterval = waveActive ? WAVE_PIPE_INTERVAL : PIPE_INTERVAL;
+  if(waveActive && frame % effectivePipeInterval === 0 && wavePipesLeft > 0){
+    spawnPipe(); wavePipesLeft--;
+    if(wavePipesLeft <= 0){
+      waveActive=false;
+      // Reward after surviving wave
+      setTimeout(()=>{
+        if(gameState==='playing'){
+          score+=3; updateHUD();
+          addFloat(W/2,H/2-40,'🎉 WAVE CLEAR! +3','#FFD700');
+          spawnConfetti(W/2,H/2);
+        }
+      },500);
+    }
+  }
+  tickGhost();
 
-  const pspd = speed + score*0.018;
+  const pspd = freezeActive ? 0 : (speed + score*0.018);
   pipes.forEach(p=>p.x-=pspd);
   pipes=pipes.filter(p=>p.x>-PIPE_W-20);
   stars.forEach(s=>{ s.x-=speed*0.75; s.angle+=0.05; s.pulse+=0.12; });
   stars=stars.filter(s=>s.x>-40);
   coins.forEach(c=>{ c.x-=speed*0.7; c.y+=Math.sin(frame*0.06+c.phase)*0.6; c.flipAngle+=0.12; });
   coins=coins.filter(c=>c.x>-40);
+  updateMysteryBoxes();
+  updateHearts();
+  updateFreezeUps();
+  tickFreeze();
   particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.life-=0.03; if(p.rot!=null) p.rot+=p.rotV; });
   particles=particles.filter(p=>p.life>0);
   floatTexts.forEach(ft=>{ ft.y+=ft.vy; ft.life-=0.025; });
@@ -1534,19 +1899,47 @@ function gameLoop(timestamp){
 
   pipes.forEach(p=>{
     if(!p.passed && bird.x>p.x+PIPE_W){
-      p.passed=true; score++;
+      p.passed=true;
+      consecutivePipes++;
+      pipesSinceHeart++;
+      pipesSinceFreeze++;
+      mysteryBoxCounter++;
+
+      // ❤️ Heart / Extra life every 30 pipes — always spawn heart, capped at 3 lives
+      if(pipesSinceHeart >= HEART_PIPE_INTERVAL){
+        pipesSinceHeart = 0;
+        spawnHeart(); // always spawn — collectHeart handles the cap
+      }
+
+      // ❄️ Freeze power-up every 40 pipes
+      if(pipesSinceFreeze >= FREEZE_PIPE_INTERVAL){
+        pipesSinceFreeze = 0;
+        spawnFreezeUp();
+      }
+
+      // 🎰 Mystery Box every 25 pipes
+      if(mysteryBoxCounter % 25 === 0){
+        spawnMysteryBox();
+      }
+
+      const pts = scoreMultiplier * (comboCount>=3?comboCount:1);
+      score += scoreMultiplier; // base score scaled
       if(score>hiScore){ hiScore=score; localStorage.setItem('fv_hi',hiScore); }
-      sfxScore();
+      sfxScoreDynamic();
       if(frame-lastPipeFrame<PIPE_INTERVAL*2) comboCount++;
       else comboCount=1;
       lastPipeFrame=frame;
-      const pts=comboCount>=3?comboCount:1;
-      addFloat(bird.x,bird.y-30,comboCount>=3?`+${pts} COMBO!`:`+1`,'#FFD700');
+      const label = feverMode
+        ? `🔥×${pts} FEVER!`
+        : comboCount>=3 ? `+${comboCount} COMBO!` : `+${scoreMultiplier}`;
+      addFloat(bird.x,bird.y-30,label, feverMode?'#FF4444':'#FFD700');
       if(comboCount>=3) showComboBadge(comboCount);
       spawnParticles(bird.x,bird.y,'#FFD700',6,3);
       checkMotivTrigger();
       maybeSpawnBonusRain();
       updateComboBadgeStyle();
+      checkFeverMode();
+      checkWave();
       checkLevel(); updateHUD();
     }
   });
@@ -1558,6 +1951,7 @@ function gameLoop(timestamp){
       takeDamage();
     }
   });
+  checkPipeDestruction();
 
   stars=stars.filter(s=>{
     if(dist(bird.x,bird.y,s.x,s.y)<30){
@@ -1574,6 +1968,7 @@ function gameLoop(timestamp){
     if(dist(bird.x,bird.y,c.x,c.y)<28){
       sfxStar(); spawnParticles(c.x,c.y,'#FFA500',8,4);
       addFloat(c.x,c.y-20,'+🪙 COIN','#FFA500');
+      haptic([20]);
       return false;
     }
     return true;
@@ -1584,6 +1979,9 @@ function gameLoop(timestamp){
 
   ctx.clearRect(0,0,W,H);
   drawBg(); drawPipes(); drawCollectibles();
+  drawHearts(); drawFreezeUps();
+  drawMysteryBoxes();
+  drawGhost();
   updateBirdTrail(); drawBirdTrail();
   drawBird();
   drawParticles(); drawFloatTexts(); drawGameHUD();
@@ -1616,6 +2014,9 @@ function takeDamage(){
   sfxHit(); lives--;
   spawnParticles(bird.x,bird.y,'#FF0000',15,6);
   triggerShake();
+  haptic([80,30,80]);
+  consecutivePipes = 0;
+  exitFeverMode();
   updateHUD();
   if(lives<=0){ triggerGameOver(); return; }
   bird.invincible=100; bird.vy=-5;
@@ -1700,6 +2101,14 @@ function triggerGameOver(){
   gameState='dead';
   cancelAnimationFrame(animId);
   sfxDie(); spawnConfetti(bird.x,bird.y);
+  stopBgMusic();
+  saveGhost();
+  // Reset fever/wave state
+  feverMode=false; scoreMultiplier=1; consecutivePipes=0;
+  waveActive=false; wavePipesLeft=0;
+  waveFired=new Set();
+  document.getElementById('feverOverlay').classList.remove('active');
+  document.getElementById('multiBadge').classList.remove('show');
 
   // Stats
   totalGames++;
@@ -1939,6 +2348,7 @@ function goHome(){
   document.getElementById('skinPanel').style.display='flex';
   document.getElementById('startOverlay').style.display='flex';
   gameState='idle';
+  stopBgMusic();
   // reset bird for idle animation
   bird={x:95,y:H/2,vy:0,rotation:0,invincible:0,flapFrame:0};
   frame=0; bgX=0; clouds=[];
@@ -1974,6 +2384,8 @@ function startGame(){
   document.getElementById('pauseOverlay').style.display='none';
   gameState='countdown';
   initGame();
+  startGhostRecord();
+  startBgMusic(selectedSkin);
   // draw initial idle frame so canvas isn't blank during countdown
   ctx.clearRect(0,0,W,H); drawBg(); drawBird();
   startCountdown();
@@ -2028,6 +2440,7 @@ function idleLoop(){
 function togglePause(){
   if(gameState==='playing'){
     gameState='paused'; cancelAnimationFrame(animId);
+    pauseBgMusic();
     document.getElementById('pauseOverlay').style.display='flex';
     document.getElementById('mPauseBtn').querySelector('span.icon').textContent='▶';
     document.getElementById('mPauseBtn').querySelector('span:last-child').textContent='RESUME';
@@ -2036,6 +2449,7 @@ function togglePause(){
     document.getElementById('pauseOverlay').style.display='none';
     document.getElementById('mPauseBtn').querySelector('span.icon').textContent='⏸';
     document.getElementById('mPauseBtn').querySelector('span:last-child').textContent='PAUSE';
+    resumeBgMusic();
     animId=requestAnimationFrame(gameLoop);
   }
 }
@@ -2048,6 +2462,8 @@ function handleMSound(e){
   btn.querySelector('span.icon').textContent=soundOn?'🔊':'🔇';
   btn.querySelector('span:last-child').textContent=soundOn?'SOUND':'MUTED';
   showToast(soundOn?'🔊 Sound ON':'🔇 Sound OFF');
+  if(soundOn && gameState==='playing') resumeBgMusic();
+  else if(!soundOn) pauseBgMusic();
 }
 function handleMSkin(e){
   e.preventDefault(); e.stopPropagation();
@@ -2099,6 +2515,7 @@ function cycleSkin(){
   updateHomeTheme();
   updateProfileCard();
   showToast(`${SKINS[selectedSkin].charName}: ${SKINS[selectedSkin].name} ${SKINS[selectedSkin].emoji}`);
+  if(gameState==='playing') startBgMusic(selectedSkin);
 }
 
 function updateHomeTheme(){
@@ -2125,6 +2542,7 @@ function buildCharPicker(){
       updateHomeTheme();
       updateProfileCard();
       showToast(`${sk.emoji} ${sk.charName} — ${sk.name}!`);
+      if(gameState==='playing') startBgMusic(selectedSkin);
     });
     row.appendChild(btn);
   });
@@ -2221,6 +2639,406 @@ function updateProfileCard(){
   if(playerProfile.age!=null) meta.push(`Age: ${playerProfile.age} yrs`);
   document.getElementById('profileCardMeta').textContent = meta.join('  •  ') || 'Tap to edit profile';
 }
+
+// ─── HAPTIC FEEDBACK ───────────────────────────────────────────────────────
+function haptic(pattern=[30]){
+  try { if(navigator.vibrate) navigator.vibrate(pattern); } catch(e){}
+}
+
+// ─── DYNAMIC PITCH LADDER ──────────────────────────────────────────────────
+// Score sounds climb in pitch every 5 points for a musical ladder effect
+function sfxScoreDynamic(){
+  if(!soundOn) return;
+  const base = 440;
+  const semitones = Math.floor(score/5) * 2; // +2 semitones every 5 pts
+  const freq = Math.min(base * Math.pow(2, semitones/12), 1800);
+  playTone(freq, 'square', 0.07, 0.18);
+}
+
+// ─── MYSTERY BOX SYSTEM ────────────────────────────────────────────────────
+let mysteryBoxes = [];
+let mysteryBoxCounter = 0;
+
+const MYSTERY_REWARDS = [
+  { label:'❤️ +1 LIFE!',      color:'#FF4444', apply:()=>{ if(lives<3){ lives++; updateHUD(); } else showToast('❤️ Full health!'); } },
+  { label:'⚡ FULL POWER!',   color:'#FFD700', apply:()=>{ power=100; updateHUD(); showToast('⚡ Power maxed!'); } },
+  { label:'🐢 SLOW DOWN!',    color:'#4ade80', apply:()=>{ speed=Math.max(speed-0.8,DIFFICULTIES[selectedDiff].speed); showToast('🐢 Speed reduced!'); } },
+  { label:'🌟 +3 SCORE!',     color:'#FF9933', apply:()=>{ score+=3; updateHUD(); } },
+  { label:'🛡️ SHIELD!',       color:'#60a5fa', apply:()=>{ bird.invincible=200; showToast('🛡️ 3-second shield!'); } },
+  { label:'💣 OOPS! FASTER!', color:'#f87171', apply:()=>{ speed+=0.6; showToast('💣 Speed boosted!'); } },
+];
+
+function spawnMysteryBox(){
+  mysteryBoxes.push({x:W+20, y:rnd(110,H-160), pulse:0, spin:0, collected:false});
+}
+
+function updateMysteryBoxes(){
+  mysteryBoxes.forEach(b=>{
+    b.x -= speed*0.65;
+    b.pulse += 0.1; b.spin += 0.04;
+    if(!b.collected && dist(bird.x,bird.y,b.x,b.y)<34){
+      b.collected=true;
+      collectMysteryBox(b.x,b.y);
+    }
+  });
+  mysteryBoxes = mysteryBoxes.filter(b=>b.x>-60 && !b.collected);
+}
+
+function collectMysteryBox(bx,by){
+  haptic([30,20,30,20,60]);
+  // Slot-machine style: flash 4 random rewards then land on one
+  let ticks=0, chosen;
+  const rewardEl = document.getElementById('mysteryReward');
+  rewardEl.classList.remove('show');
+  const iv = setInterval(()=>{
+    ticks++;
+    const r = MYSTERY_REWARDS[Math.floor(Math.random()*MYSTERY_REWARDS.length)];
+    rewardEl.style.color = r.color;
+    rewardEl.style.textShadow = `0 0 20px ${r.color}`;
+    rewardEl.textContent = r.label;
+    rewardEl.style.opacity='1';
+    if(ticks >= 7){
+      clearInterval(iv);
+      chosen = r;
+      void rewardEl.offsetWidth;
+      rewardEl.classList.add('show');
+      spawnParticles(bx,by,r.color,20,7);
+      spawnConfetti(bx,by);
+      playTone(660,'square',0.12,0.3);
+      setTimeout(()=>{ chosen.apply(); rewardEl.classList.remove('show'); rewardEl.style.opacity='0'; }, 900);
+    }
+  }, 110);
+}
+
+function drawMysteryBoxes(){
+  mysteryBoxes.forEach(b=>{
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(Math.sin(b.spin)*0.2);
+    const glow = 8+Math.sin(b.pulse)*5;
+    ctx.shadowColor='#FFD700'; ctx.shadowBlur=glow;
+    // Box body
+    const s=22;
+    ctx.fillStyle='#1a0a2e';
+    ctx.strokeStyle='#FFD700'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.roundRect(-s,-s,s*2,s*2,6); ctx.fill(); ctx.stroke();
+    // Ribbon cross
+    ctx.strokeStyle='#FFD700'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(-s,0); ctx.lineTo(s,0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-s); ctx.lineTo(0,s); ctx.stroke();
+    // Question mark
+    ctx.shadowBlur=0;
+    ctx.font='bold 22px Baloo 2'; ctx.fillStyle='#FFD700';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('?',0,1);
+    // Sparkle dots
+    for(let i=0;i<4;i++){
+      const a=b.pulse+i*Math.PI/2, r=30+Math.sin(b.pulse*2)*4;
+      ctx.beginPath(); ctx.arc(Math.cos(a)*r,Math.sin(a)*r,2.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,215,0,${0.4+Math.sin(b.pulse+i)*0.4})`; ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+// ─── FEVER MODE ────────────────────────────────────────────────────────────
+let feverMode = false;
+let consecutivePipes = 0; // pipes passed without damage
+const FEVER_THRESHOLD = 8;
+let scoreMultiplier = 1;
+
+function checkFeverMode(){
+  if(!feverMode && consecutivePipes >= FEVER_THRESHOLD){
+    feverMode = true; scoreMultiplier = 2;
+    document.getElementById('feverOverlay').classList.add('active');
+    document.getElementById('feverBanner').classList.remove('hide');
+    document.getElementById('feverBanner').classList.add('show');
+    document.getElementById('multiBadge').classList.add('show');
+    haptic([40,20,40,20,80]);
+    setTimeout(()=>document.getElementById('feverBanner').classList.remove('show'),2000);
+  }
+}
+
+function exitFeverMode(){
+  if(!feverMode) return;
+  feverMode = false; scoreMultiplier = 1; consecutivePipes = 0;
+  document.getElementById('feverOverlay').classList.remove('active');
+  document.getElementById('feverBanner').classList.remove('show');
+  document.getElementById('multiBadge').classList.remove('show');
+  showToast('Fever mode ended!');
+}
+
+// ─── WAVE BOSS ─────────────────────────────────────────────────────────────
+const WAVE_SCORES = [20, 40, 60];
+let waveFired = new Set();
+let waveActive = false;
+let wavePipesLeft = 0;
+const WAVE_PIPE_INTERVAL = 38; // much faster during wave
+
+function checkWave(){
+  WAVE_SCORES.forEach(ws=>{
+    if(score >= ws && !waveFired.has(ws)){
+      waveFired.add(ws);
+      triggerWave();
+    }
+  });
+}
+
+function triggerWave(){
+  waveActive = true; wavePipesLeft = 6;
+  const el = document.getElementById('waveBossEl');
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  haptic([100,50,100,50,100]);
+  sfxLevelUp();
+}
+
+// ─── PIPE DESTRUCTION (power mode) ─────────────────────────────────────────
+let destroyedPipes = [];
+function checkPipeDestruction(){
+  if(!powerActive) return;
+  pipes.forEach(p=>{
+    const bx=bird.x, by=bird.y;
+    if(bx+13>p.x && bx-13<p.x+PIPE_W && (by-16<p.top || by+16>p.top+p.gap)){
+      // Explode it!
+      destroyedPipes.push({x:p.x+PIPE_W/2, y:by, life:1.0});
+      spawnParticles(p.x+PIPE_W/2, p.top+p.gap/2, '#4ade80', 20, 8);
+      spawnParticles(p.x+PIPE_W/2, p.top+p.gap/2, '#FFD700', 12, 5);
+      addFloat(p.x+PIPE_W/2, p.top+p.gap/2-30, '💥 DESTROYED!', '#4ade80');
+      haptic([60]);
+      p.destroyed = true;
+      score++; updateHUD();
+    }
+  });
+  pipes = pipes.filter(p=>!p.destroyed);
+}
+
+// ─── GHOST REPLAY ──────────────────────────────────────────────────────────
+let ghostPositions = [];
+let ghostRecord    = JSON.parse(localStorage.getItem('fv_ghost')||'[]');
+let recordingGhost = false;
+
+function startGhostRecord(){
+  ghostPositions=[]; recordingGhost=true;
+}
+function tickGhost(){
+  if(recordingGhost && ghostPositions.length < 3600){
+    ghostPositions.push({y:bird.y, r:bird.rotation});
+  }
+}
+function saveGhost(){
+  if(ghostPositions.length > 10){
+    ghostRecord = ghostPositions;
+    localStorage.setItem('fv_ghost', JSON.stringify(ghostRecord.slice(0,1800)));
+  }
+}
+let ghostFrame = 0;
+function drawGhost(){
+  if(!ghostRecord.length) return;
+  const idx = ghostFrame % ghostRecord.length;
+  ghostFrame++;
+  const g = ghostRecord[idx];
+  if(!g) return;
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  ctx.translate(bird.x - 10, g.y); ctx.rotate(g.r);
+  ctx.font = '24px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='#fff';
+  ctx.fillText(SKINS[selectedSkin].emoji, 0, 0);
+  ctx.restore();
+}
+
+// ─── LIFE HEART COLLECTIBLES ───────────────────────────────────────────────
+// A heart collectible appears every 30 pipes passed (once per run, resets each game)
+let hearts = [];          // active heart collectibles on canvas
+let pipesSinceHeart = 0;  // counts pipes toward next heart drop
+const HEART_PIPE_INTERVAL = 30;
+
+function spawnHeart(){
+  hearts.push({x: W+20, y: rnd(100, H-160), pulse:0, angle:0});
+}
+
+function updateHearts(){
+  hearts.forEach(h=>{
+    h.x -= speed * 0.55;
+    h.pulse += 0.1;
+    h.angle += 0.06;
+    if(dist(bird.x, bird.y, h.x, h.y) < 32){
+      collectHeart(h);
+      h.collected = true;
+    }
+  });
+  hearts = hearts.filter(h => h.x > -50 && !h.collected);
+}
+
+function collectHeart(h){
+  spawnParticles(h.x, h.y, '#FF4444', 20, 6);
+  if(lives >= 3){
+    // Full health — offer via modal popup
+    addFloat(h.x, h.y-30, '❤️ Full! Offer saved!', '#FF4444');
+    haptic([20,10,20]);
+    setTimeout(()=>showExtraLifeModal(), 300);
+    return;
+  }
+  lives = Math.min(3, lives+1);
+  haptic([30,20,30,20,50]);
+  sfxExtraLife();
+  spawnConfetti(h.x, h.y);
+  updateHUD();
+  addFloat(h.x, h.y-30, '❤️ +1 LIFE!', '#FF4444');
+  const el = document.getElementById('lifePickupEl');
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+}
+
+function drawHearts(){
+  hearts.forEach(h=>{
+    ctx.save();
+    ctx.translate(h.x, h.y);
+    const sc = 1 + Math.sin(h.pulse)*0.12;
+    ctx.scale(sc, sc);
+    // Glowing ring
+    ctx.shadowColor='#FF4444'; ctx.shadowBlur = 14+Math.sin(h.pulse)*6;
+    ctx.font='26px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('❤️', 0, 0);
+    // orbiting sparkle
+    const sx = Math.cos(h.angle)*20, sy = Math.sin(h.angle)*20;
+    ctx.shadowBlur=0; ctx.font='10px serif';
+    ctx.fillText('✨', sx, sy);
+    ctx.restore();
+  });
+}
+
+// ─── EXTRA LIFE MODAL (every 30 pipes while lives < 3) ─────────────────────
+let extraLifeModalActive = false;
+let extraLifeTimer = null;
+let extraLifeCountdown = 5;
+
+function showExtraLifeModal(){
+  if(extraLifeModalActive || lives >= 3) return;
+  // Pause the game
+  if(gameState==='playing'){
+    gameState='paused'; cancelAnimationFrame(animId);
+    pauseBgMusic();
+  }
+  extraLifeModalActive = true;
+  extraLifeCountdown = 5;
+  const modal = document.getElementById('extraLifeModal');
+  modal.style.display = 'block';
+  modal.classList.remove('show'); void modal.offsetWidth; modal.classList.add('show');
+  document.getElementById('elmCountdown').textContent = extraLifeCountdown;
+  sfxExtraLife();
+  haptic([50,30,50,30,100]);
+
+  extraLifeTimer = setInterval(()=>{
+    extraLifeCountdown--;
+    const cd = document.getElementById('elmCountdown');
+    if(cd) cd.textContent = extraLifeCountdown;
+    playTone(440,'sine',0.08,0.15);
+    if(extraLifeCountdown <= 0){
+      closeExtraLifeModal(false);
+    }
+  }, 1000);
+}
+
+function closeExtraLifeModal(accepted){
+  clearInterval(extraLifeTimer);
+  extraLifeModalActive = false;
+  const modal = document.getElementById('extraLifeModal');
+  modal.style.display = 'none';
+  modal.classList.remove('show');
+
+  if(accepted){
+    lives = Math.min(3, lives+1);
+    updateHUD();
+    spawnConfetti(bird.x, bird.y);
+    sfxExtraLife();
+    showToast('❤️ Extra life granted! Keep flying!');
+    const el = document.getElementById('lifePickupEl');
+    el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  }
+
+  // Resume game
+  if(gameState==='paused'){
+    gameState='playing';
+    document.getElementById('pauseOverlay').style.display='none';
+    resumeBgMusic();
+    animId = requestAnimationFrame(gameLoop);
+  }
+}
+
+document.getElementById('elmYesBtn').addEventListener('click', ()=>closeExtraLifeModal(true));
+document.getElementById('elmNoBtn').addEventListener('click',  ()=>closeExtraLifeModal(false));
+
+// ─── TIME FREEZE POWER-UP ──────────────────────────────────────────────────
+// Appears every 40 pipes — collecting it freezes pipes for 3 seconds
+let freezeUps = [];
+let freezeActive = false;
+let freezeTimer = 0;
+let pipesSinceFreeze = 0;
+const FREEZE_PIPE_INTERVAL = 40;
+
+function spawnFreezeUp(){
+  freezeUps.push({x: W+20, y: rnd(90, H-150), pulse:0});
+}
+
+function updateFreezeUps(){
+  freezeUps.forEach(f=>{
+    if(!freezeActive) f.x -= speed * 0.6;
+    f.pulse += 0.12;
+    if(dist(bird.x, bird.y, f.x, f.y) < 30){
+      activateFreeze();
+      f.collected = true;
+    }
+  });
+  freezeUps = freezeUps.filter(f => f.x > -50 && !f.collected);
+}
+
+function activateFreeze(){
+  if(freezeActive) return;
+  freezeActive = true; freezeTimer = 180; // 3 seconds at 60fps
+  sfxFreeze();
+  haptic([40,20,40]);
+  spawnParticles(bird.x, bird.y, '#60a5fa', 20, 6);
+  addFloat(bird.x, bird.y-35, '❄️ TIME FREEZE!', '#60a5fa');
+  document.getElementById('freezeOverlay').classList.add('active');
+  document.getElementById('freezeTimerEl').classList.add('visible');
+  showToast('❄️ Pipes frozen for 3 seconds!');
+}
+
+function tickFreeze(){
+  if(!freezeActive) return;
+  freezeTimer--;
+  const el = document.getElementById('freezeTimerEl');
+  if(el) el.textContent = `❄️ FREEZE ${Math.ceil(freezeTimer/60)}s`;
+  if(freezeTimer <= 0){
+    freezeActive = false;
+    document.getElementById('freezeOverlay').classList.remove('active');
+    const tel = document.getElementById('freezeTimerEl');
+    if(tel) tel.classList.remove('visible');
+    showToast('❄️ Freeze over!');
+  }
+}
+
+function drawFreezeUps(){
+  freezeUps.forEach(f=>{
+    ctx.save();
+    ctx.translate(f.x, f.y);
+    const sc = 1 + Math.sin(f.pulse)*0.15;
+    ctx.scale(sc,sc);
+    ctx.shadowColor='#60a5fa'; ctx.shadowBlur=16+Math.sin(f.pulse)*6;
+    ctx.font='26px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('❄️', 0, 0);
+    // orbit dots
+    for(let i=0;i<3;i++){
+      const a = f.pulse+i*(Math.PI*2/3);
+      ctx.shadowBlur=0; ctx.font='8px serif';
+      ctx.fillText('❄', Math.cos(a)*18, Math.sin(a)*18);
+    }
+    ctx.restore();
+  });
+}
+
+// Apply freeze to pipe movement (called from game loop)
+// When freezeActive the pspd passed to pipes is 0
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────
 frame=0; bgX=0; speed=DIFFICULTIES[selectedDiff].speed;
