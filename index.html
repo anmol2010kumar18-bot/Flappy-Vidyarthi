@@ -37,6 +37,13 @@
     position:absolute; top:10px; left:50%; transform:translateX(-50%);
     font-size:clamp(22px,5vw,32px); font-weight:800; color:#fff;
     text-shadow: 0 0 10px rgba(255,153,51,0.8), 2px 2px 0 #FF6B00;
+    transition: left 0.3s, transform 0.3s;
+  }
+  body.two-player-active #scoreDisplay {
+    left:25%; transform:translateX(-50%);
+  }
+  body.two-player-active #p2HUD {
+    display:flex !important;
   }
   #livesDisplay { position:absolute; top:10px; left:10px; display:flex; gap:2px; }
   #powerDisplay { position:absolute; top:10px; right:10px; display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
@@ -597,6 +604,7 @@
     letter-spacing:1px; opacity:0; transition:opacity 0.3s; white-space:nowrap;
   }
   #freezeTimerEl.visible { opacity:1; }
+  @keyframes closeCall {
     0%   { opacity:0; transform:translateX(-50%) scale(0.6); }
     30%  { opacity:1; transform:translateX(-50%) scale(1.15); }
     70%  { opacity:1; transform:translateX(-50%) scale(1); }
@@ -690,6 +698,100 @@
     .scores-row { margin-bottom:6px; }
     #charPickerRow { max-width:98vw; }
   }
+
+  /* ── TWO PLAYER MODE ── */
+  #modePicker { display:flex; gap:8px; justify-content:center; margin-bottom:12px; }
+  .modeBtn {
+    border:2px solid rgba(255,255,255,0.18); border-radius:12px;
+    padding:8px 14px; cursor:pointer; font-family:'Baloo 2',cursive;
+    font-size:11px; font-weight:700; letter-spacing:0.5px;
+    transition:all 0.18s; pointer-events:all; background:rgba(0,0,0,0.35);
+    display:flex; flex-direction:column; align-items:center; gap:2px; min-width:80px;
+    color:#fff; -webkit-tap-highlight-color:transparent;
+  }
+  .modeBtn .mode-icon { font-size:18px; }
+  .modeBtn.active { border-color:#FFD700; background:rgba(255,215,0,0.18); box-shadow:0 0 14px rgba(255,215,0,0.4); transform:scale(1.08); }
+
+  /* 2P Split screen */
+  #p2HUD {
+    position:absolute; top:0; right:0; width:50%; pointer-events:none;
+    display:none; flex-direction:column; align-items:flex-end; padding:8px;
+  }
+  #p2ScoreDisplay {
+    font-size:clamp(18px,4vw,26px); font-weight:800; color:#60a5fa;
+    text-shadow: 0 0 10px rgba(96,165,250,0.8), 2px 2px 0 #0050CC;
+  }
+  #p2LivesDisplay { display:flex; gap:2px; }
+  #splitLine {
+    position:absolute; top:0; left:50%; width:2px; height:100%;
+    background:linear-gradient(to bottom, transparent, rgba(255,215,0,0.6), transparent);
+    pointer-events:none; display:none; z-index:6;
+  }
+  #p1Label, #p2Label {
+    position:absolute; top:50%; font-size:10px; font-weight:800;
+    letter-spacing:2px; opacity:0.3; pointer-events:none;
+    writing-mode:vertical-rl; display:none;
+  }
+  #p1Label { left:4px; color:#FF9933; transform:translateY(-50%); }
+  #p2Label { right:4px; color:#60a5fa; transform:translateY(-50%) rotate(180deg); }
+  #p1TapHint, #p2TapHint {
+    position:absolute; bottom:80px; font-size:12px; font-weight:700;
+    pointer-events:none; opacity:0; transition:opacity 0.3s;
+    text-shadow:0 0 8px rgba(0,0,0,0.8);
+  }
+  #p1TapHint { left:25%; transform:translateX(-50%); color:#FF9933; }
+  #p2TapHint { right:25%; transform:translateX(50%); color:#60a5fa; }
+
+  /* Winner overlay */
+  #winnerOverlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:16px; backdrop-filter:blur(8px);
+    background:rgba(5,0,20,0.92); z-index:90; padding:16px;
+  }
+  #winnerEmoji { font-size:64px; margin-bottom:8px; animation:medalDrop 0.55s cubic-bezier(.17,.67,.49,1.3) both; }
+  #winnerTitle { font-size:clamp(22px,5vw,30px); font-weight:800; color:#FFD700; text-align:center; text-shadow:0 0 30px #FF6B00; margin-bottom:4px; }
+  #winnerSub { font-size:13px; color:#FF9933; margin-bottom:14px; }
+  .winner-scores { display:flex; gap:20px; margin-bottom:18px; }
+  .ws-box { text-align:center; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:10px 18px; }
+  .ws-box .ws-label { font-size:10px; color:#aaa; letter-spacing:1px; }
+  .ws-box .ws-val { font-size:28px; font-weight:800; }
+  .ws-box.p1 .ws-val { color:#FF9933; }
+  .ws-box.p2 .ws-val { color:#60a5fa; }
+  #winnerPlayAgain { margin-top:4px; }
+
+  /* mobile 2P controls */
+  #p2Controls {
+    display:none; width:100%; justify-content:space-around;
+    align-items:center; padding:4px 8px; gap:6px;
+    background:rgba(5,0,20,0.85); border-top:1px solid rgba(96,165,250,0.2);
+    flex-shrink:0; min-height:52px;
+  }
+  .p2CtrlBtn {
+    flex:1; max-width:100px; background:rgba(96,165,250,0.12);
+    border:1.5px solid rgba(96,165,250,0.35);
+    border-radius:12px; color:#60a5fa;
+    font-size:10px; font-weight:700;
+    padding:6px 4px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    transition:all 0.1s; -webkit-tap-highlight-color:transparent;
+    font-family:'Baloo 2',cursive; letter-spacing:0.5px;
+    touch-action:manipulation; min-height:44px;
+  }
+  .p2CtrlBtn span.icon { font-size:18px; line-height:1; }
+  .p2CtrlBtn:active { background:rgba(96,165,250,0.28); transform:scale(0.92); }
+  #p2FlyBtn {
+    flex:2; max-width:160px;
+    background:linear-gradient(135deg,rgba(96,165,250,0.25),rgba(59,130,246,0.15));
+    border-color:#60a5fa; font-size:13px;
+  }
+  .controls-2p-label {
+    font-size:9px; color:rgba(255,255,255,0.4); text-align:center;
+    letter-spacing:1.5px; padding:2px 0; font-weight:700;
+  }
+  .p1-controls-label { color:rgba(255,153,51,0.6); }
+  .p2-controls-label { color:rgba(96,165,250,0.6); }
+
 </style>
 </head>
 <body>
@@ -713,6 +815,38 @@
       <div id="safeZoneBar" style="height:60px;display:none;">
         <div id="safeZoneFill" style="height:50%;"></div>
       </div>
+    </div>
+
+
+    <!-- P2 HUD (2-player mode only) -->
+    <div id="p2HUD">
+      <div id="p2ScoreDisplay">0</div>
+      <div id="p2LivesDisplay"></div>
+      <div style="display:flex;align-items:center;gap:3px;margin-top:2px;">
+        <span style="font-size:8px;color:#60a5fa;font-weight:700;">⚡</span>
+        <div style="width:44px;height:6px;background:rgba(0,0,0,0.4);border-radius:4px;border:1px solid rgba(96,165,250,0.3);overflow:hidden;">
+          <div id="p2PowerFill" style="height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa,#93c5fd);border-radius:4px;transition:width 0.15s;width:0%;"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Split line divider -->
+    <div id="splitLine"></div>
+    <div id="p1Label">PLAYER 1</div>
+    <div id="p2Label">PLAYER 2</div>
+    <div id="p1TapHint">👆 TAP LEFT</div>
+    <div id="p2TapHint">TAP RIGHT 👆</div>
+
+    <!-- Winner overlay (2P) -->
+    <div id="winnerOverlay">
+      <div id="winnerEmoji">🏆</div>
+      <div id="winnerTitle">Player 1 Wins!</div>
+      <div id="winnerSub">Champion!</div>
+      <div class="winner-scores">
+        <div class="ws-box p1"><div class="ws-label">🟠 P1 SCORE</div><div class="ws-val" id="winP1Score">0</div></div>
+        <div class="ws-box p2"><div class="ws-label">🔵 P2 SCORE</div><div class="ws-val" id="winP2Score">0</div></div>
+      </div>
+      <button class="bigBtn" id="winnerPlayAgain">🔄 Play Again</button>
+      <button class="go-home-btn" style="margin-top:8px;" id="winnerHome">🏠 Home</button>
     </div>
 
     <!-- Level flash -->
@@ -830,8 +964,12 @@
       </div>
 
       <div style="margin-bottom:10px;text-align:center;width:100%;">
-        <div style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:6px;">CHOOSE YOUR CHARACTER</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:3px;">🟠 PLAYER 1 CHARACTER</div>
         <div id="charPickerRow"></div>
+        <div id="p2SkinSection" style="display:none;margin-top:8px;">
+          <div style="font-size:9px;color:rgba(96,165,250,0.8);letter-spacing:2px;margin-bottom:3px;">🔵 PLAYER 2 CHARACTER</div>
+          <div id="charPickerRow2" style="display:flex;gap:7px;overflow-x:auto;padding:4px 4px 6px;scroll-snap-type:x mandatory;max-width:min(380px,94vw);scrollbar-width:thin;scrollbar-color:rgba(96,165,250,0.3) transparent;"></div>
+        </div>
       </div>
 
       <div style="margin-bottom:4px;text-align:center;width:100%;">
@@ -869,10 +1007,27 @@
         <span class="chip">🌙 Night Mode</span>
         <span class="chip">⚡ 4 Difficulty Levels</span>
       </div>
-      <button class="bigBtn" id="startBtn">▶ Start Game</button>
+            <div style="margin-bottom:4px;text-align:center;width:100%;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:6px;">GAME MODE</div>
+        <div id="modePicker">
+          <button class="modeBtn active" data-mode="single">
+            <span class="mode-icon">🎮</span>
+            <span>SOLO</span>
+            <span style="font-size:7px;color:rgba(255,255,255,0.5);">1 Player</span>
+          </button>
+          <button class="modeBtn" data-mode="two">
+            <span class="mode-icon">👥</span>
+            <span>VS MODE</span>
+            <span style="font-size:7px;color:rgba(255,255,255,0.5);">2 Players</span>
+          </button>
+        </div>
+      </div>
+<button class="bigBtn" id="startBtn">▶ Start Game</button>
       <div class="controls-hint">
-        Tap canvas = Fly &nbsp;|&nbsp; ⚡ Button = Activate Power<br>
-        SPACE / ↑ = Fly &nbsp;|&nbsp; SHIFT = Power &nbsp;|&nbsp; P = Pause
+        <span id="soloHint">Tap canvas = Fly &nbsp;|&nbsp; ⚡ Button = Activate Power<br>
+        SPACE / ↑ = Fly &nbsp;|&nbsp; SHIFT = Power &nbsp;|&nbsp; P = Pause</span>
+        <span id="twoPlayerHint" style="display:none;">🟠 P1: Tap LEFT half / SPACE / Left btn &nbsp;|&nbsp; 🔵 P2: Tap RIGHT half / W key / Right btn<br>
+        P1 Power: SHIFT &nbsp;|&nbsp; P2 Power: L key &nbsp;|&nbsp; P = Pause</span>
       </div>
     </div>
 
@@ -943,8 +1098,11 @@
     <!-- Pause Overlay -->
     <div id="pauseOverlay">
       <h1>⏸ Paused</h1>
-      <div class="sub">Game is paused</div>
-      <button id="pauseResumeBtn" onclick="togglePause()">▶ Resume</button>
+      <div class="sub" id="pauseScoreInfo">Score: 0</div>
+      <button id="pauseResumeBtn" onclick="togglePause()" style="margin-top:14px;background:linear-gradient(135deg,#FF6B00,#FF9933);color:#fff;border:none;padding:11px 32px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Baloo 2',cursive;-webkit-tap-highlight-color:transparent;">▶ Resume</button>
+      <button onclick="startGame()" style="margin-top:8px;background:rgba(255,255,255,0.1);color:#fff;border:2px solid rgba(255,255,255,0.3);padding:9px 28px;border-radius:30px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Baloo 2',cursive;-webkit-tap-highlight-color:transparent;">🔄 Restart</button>
+      <button onclick="togglePause();goHome();" style="margin-top:6px;background:transparent;color:rgba(255,255,255,0.45);border:none;padding:7px 20px;border-radius:30px;font-size:12px;cursor:pointer;font-family:'Baloo 2',cursive;">🏠 Home</button>
+      <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1px;">P = Resume &nbsp;|&nbsp; ESC = Resume</div>
     </div>
   </div>
 
@@ -972,6 +1130,37 @@
     </button>
   </div>
 </div>
+
+  <!-- P2 Controls (2-player mobile) -->
+  <div id="p2Controls">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div class="controls-2p-label p1-controls-label">PLAYER 1</div>
+      <div style="display:flex;gap:4px;width:100%;justify-content:center;">
+        <button class="mCtrlBtn" id="p1FlyMobileBtn" style="flex:2;max-width:120px;border-color:#FF9933;color:#FF9933;" ontouchstart="handleP1Fly(event)" onclick="handleP1Fly(event)">
+          <span class="icon">🟠</span>
+          <span>P1 FLY</span>
+        </button>
+        <button class="mCtrlBtn" id="p1PowerMobileBtn" style="border-color:#FF9933;color:#FF9933;max-width:70px;" ontouchstart="handleP1Power(event)" onclick="handleP1Power(event)">
+          <span class="icon">⚡</span>
+          <span>PWR</span>
+        </button>
+      </div>
+    </div>
+    <div style="width:1px;height:40px;background:rgba(255,255,255,0.15);flex-shrink:0;"></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div class="controls-2p-label p2-controls-label">PLAYER 2</div>
+      <div style="display:flex;gap:4px;width:100%;justify-content:center;">
+        <button class="p2CtrlBtn" id="p2FlyBtn" ontouchstart="handleP2Fly(event)" onclick="handleP2Fly(event)">
+          <span class="icon">🔵</span>
+          <span>P2 FLY</span>
+        </button>
+        <button class="p2CtrlBtn" style="max-width:70px;" ontouchstart="handleP2Power(event)" onclick="handleP2Power(event)">
+          <span class="icon">⚡</span>
+          <span>PWR</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
 <script>
 // ─── RESPONSIVE CANVAS SIZING ──────────────────────────────────────────────
@@ -1008,6 +1197,9 @@ window.addEventListener('orientationchange', ()=>{ setTimeout(resizeGame,100); }
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 const W = 420, H = 600;
+
+// ─── TWO PLAYER FLAG (declared early so hooks in initGame can use it) ─────
+let twoPlayerMode = false;
 const PIPE_W = 54, PIPE_GAP_BASE = 158;
 const GRAVITY = 0.38, JUMP_VEL = -7.4, MAX_FALL = 9.5;
 const PIPE_INTERVAL = 70;
@@ -1276,12 +1468,19 @@ function initGame(){
   updateHUD();
   updateDiffBadge();
   updatePowerBtn();
+  // 2P init
+  const activeMode2 = document.querySelector('.modeBtn.active');
+  if(activeMode2 && activeMode2.dataset.mode==='two'){
+    initTwoPlayer();
+  } else {
+    resetTwoPlayer();
+  }
 }
 
 // ─── HUD ───────────────────────────────────────────────────────────────────
 function updateHUD(){
   const sd = document.getElementById('scoreDisplay');
-  sd.textContent = score;
+  sd.textContent = twoPlayerMode ? '🟠 '+score : score;
   sd.classList.remove('score-pop');
   void sd.offsetWidth; // reflow
   sd.classList.add('score-pop');
@@ -1814,7 +2013,40 @@ function drawGameHUD(){
     ctx.restore();
     ctx.font=`bold 12px 'Baloo 2'`; ctx.fillStyle='#FFD700';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('⚡ POWER MODE ACTIVE! ⚡', W/2, H-72);
+    ctx.fillText('⚡ P1 POWER MODE! ⚡', twoPlayerMode ? W/4 : W/2, H-72);
+  }
+  if(twoPlayerMode && powerActive2){
+    ctx.save(); ctx.globalAlpha=0.07+Math.sin(frame*0.15)*0.04;
+    ctx.fillStyle='#60a5fa'; ctx.fillRect(0,0,W,H);
+    ctx.restore();
+    ctx.font=`bold 12px 'Baloo 2'`; ctx.fillStyle='#60a5fa';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('⚡ P2 POWER MODE! ⚡', W*3/4, H-72);
+  }
+  if(twoPlayerMode){
+    // Subtle vertical center divider
+    const grad = ctx.createLinearGradient(W/2, 0, W/2, H);
+    grad.addColorStop(0,'transparent');
+    grad.addColorStop(0.2,`rgba(255,215,0,${0.15+Math.sin(frame*0.04)*0.05})`);
+    grad.addColorStop(0.5,`rgba(255,215,0,${0.25+Math.sin(frame*0.04)*0.08})`);
+    grad.addColorStop(0.8,`rgba(255,215,0,${0.15+Math.sin(frame*0.04)*0.05})`);
+    grad.addColorStop(1,'transparent');
+    ctx.save();
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6,8]);
+    ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H-55); ctx.stroke();
+    ctx.setLineDash([]);
+    // P1/P2 labels on canvas
+    ctx.font = "bold 10px 'Baloo 2'"; ctx.textAlign='center';
+    ctx.fillStyle='rgba(255,153,51,0.5)'; ctx.textBaseline='middle';
+    ctx.fillText('P1', W/4, H-68);
+    ctx.fillStyle='rgba(96,165,250,0.5)';
+    ctx.fillText('P2', W*3/4, H-68);
+    // Show dead status
+    if(p1Dead){ ctx.fillStyle='rgba(255,0,0,0.6)'; ctx.fillText('❌ OUT', W/4, H/2); }
+    if(p2Dead){ ctx.fillStyle='rgba(0,150,255,0.6)'; ctx.fillText('❌ OUT', W*3/4, H/2); }
+    ctx.restore();
   }
 }
 
@@ -1859,6 +2091,7 @@ function gameLoop(timestamp){
   bird.y+=bird.vy;
   bird.rotation=Math.max(-0.55,Math.min(1.3,bird.vy*0.08));
   if(bird.invincible>0) bird.invincible--;
+  updateBird2Physics();
 
   if(frame%PIPE_INTERVAL===0) spawnPipe();
   if(frame%STAR_EVERY===0) spawnStar();
@@ -1922,8 +2155,8 @@ function gameLoop(timestamp){
         spawnMysteryBox();
       }
 
-      const pts = scoreMultiplier * (comboCount>=3?comboCount:1);
-      score += scoreMultiplier; // base score scaled
+      const pts = feverMode ? scoreMultiplier * Math.max(1,comboCount) : scoreMultiplier;
+      score += pts; // properly scaled score
       if(score>hiScore){ hiScore=score; localStorage.setItem('fv_hi',hiScore); }
       sfxScoreDynamic();
       if(frame-lastPipeFrame<PIPE_INTERVAL*2) comboCount++;
@@ -1944,7 +2177,7 @@ function gameLoop(timestamp){
     }
   });
 
-  pipes.forEach(p=>{
+  if(!p1Dead) pipes.forEach(p=>{
     if(bird.invincible>0||powerActive) return;
     const bx=bird.x, by=bird.y;
     if(bx+13>p.x && bx-13<p.x+PIPE_W && (by-16<p.top || by+16>p.top+p.gap)){
@@ -1952,30 +2185,46 @@ function gameLoop(timestamp){
     }
   });
   checkPipeDestruction();
+  checkBird2Collisions();
 
   stars=stars.filter(s=>{
-    if(dist(bird.x,bird.y,s.x,s.y)<30){
+    if(!s.takenP1 && dist(bird.x,bird.y,s.x,s.y)<30){
       const amt=s.super?50:20;
       power=Math.min(100,power+amt);
       sfxStar(); spawnParticles(s.x,s.y,'#FFD700',12,5);
       addFloat(s.x,s.y-20,s.super?'+50 POWER!':'+20 POWER','#FFD700');
-      updateHUD(); return false;
+      updateHUD();
+      if(twoPlayerMode && !s.takenP2){ s.takenP1=true; return true; }
+      return false;
     }
+    if(twoPlayerMode && s.takenP1 && s.takenP2) return false;
     return true;
   });
 
   coins=coins.filter(c=>{
-    if(dist(bird.x,bird.y,c.x,c.y)<28){
+    if(!c.takenP1 && dist(bird.x,bird.y,c.x,c.y)<28){
       sfxStar(); spawnParticles(c.x,c.y,'#FFA500',8,4);
-      addFloat(c.x,c.y-20,'+🪙 COIN','#FFA500');
+      addFloat(c.x,c.y-20,'+🪙 P1 COIN','#FFA500');
       haptic([20]);
+      if(twoPlayerMode && !c.takenP2){ c.takenP1=true; return true; }
       return false;
     }
+    if(!c.takenP2 && twoPlayerMode && dist(bird2.x,bird2.y,c.x,c.y)<28 && !p2Dead){
+      sfxStar(); spawnParticles(c.x,c.y,'#60a5fa',8,4);
+      addFloat(c.x,c.y-20,'+🪙 P2 COIN','#60a5fa');
+      score2++; updateP2HUD();
+      c.takenP2=true;
+      if(c.takenP1) return false;
+      return true;
+    }
+    if(twoPlayerMode && c.takenP1 && c.takenP2) return false;
     return true;
   });
 
-  if(bird.y>H-55-16){ bird.y=H-55-16; takeDamage(); }
-  if(bird.y<14){ bird.y=14; bird.vy=2; }
+  if(!p1Dead){
+    if(bird.y>H-55-16){ bird.y=H-55-16; takeDamage(); }
+    if(bird.y<14){ bird.y=14; bird.vy=2; }
+  }
 
   ctx.clearRect(0,0,W,H);
   drawBg(); drawPipes(); drawCollectibles();
@@ -1984,6 +2233,7 @@ function gameLoop(timestamp){
   drawGhost();
   updateBirdTrail(); drawBirdTrail();
   drawBird();
+  drawBird2();
   drawParticles(); drawFloatTexts(); drawGameHUD();
   checkCloseCall();
   updateSafeZoneBar();
@@ -2098,6 +2348,21 @@ function checkAchievements(){
 
 // ─── GAME OVER ─────────────────────────────────────────────────────────────
 function triggerGameOver(){
+  if(twoPlayerMode){
+    if(!p1Dead){
+      p1Dead=true;
+      sfxDie();
+      spawnParticles(bird.x, bird.y, '#FF0000', 20, 6);
+      triggerShake();
+    }
+    checkTwoPlayerEnd();
+    if(!p2Dead){
+      // P2 is still alive — continue the game loop (don't end)
+      return;
+    }
+    // Both dead — showWinnerOverlay already called
+    return;
+  }
   gameState='dead';
   cancelAnimationFrame(animId);
   sfxDie(); spawnConfetti(bird.x,bird.y);
@@ -2147,7 +2412,7 @@ function triggerGameOver(){
   const pct = Math.min(100, Math.round(score/goal*100));
   const done = score >= goal;
   document.getElementById('dailyChalVal').innerHTML =
-    `<span style="color:${done?'#4ade80':'#FFD700'}">${done?'✅':''+score+'/'+goal}</span>`;
+    `<span style="color:${done?'#4ade80':'#FFD700'}">${done?'✅ Done!':score+'/'+goal}</span>`;
 
   // Achievements
   const newAchs = checkAchievements();
@@ -2344,6 +2609,8 @@ function updateSafeZoneBar(){
 
 // ─── COUNT UP ANIMATION ──────────────────────────────────────────────────
 function goHome(){
+  document.getElementById('winnerOverlay').style.display='none';
+  resetTwoPlayer();
   document.getElementById('gameOverOverlay').style.display='none';
   document.getElementById('skinPanel').style.display='flex';
   document.getElementById('startOverlay').style.display='flex';
@@ -2377,11 +2644,16 @@ function shareScore(){
 
 // ─── START ─────────────────────────────────────────────────────────────────
 function startGame(){
+  // Check if 2P mode is selected
+  const activeMode = document.querySelector('.modeBtn.active');
+  const newMode = activeMode ? activeMode.dataset.mode === 'two' : false;
+  if(!newMode && twoPlayerMode) resetTwoPlayer();
   document.getElementById('startOverlay').style.display='none';
   document.getElementById('gameOverOverlay').style.display='none';
   document.getElementById('skinPanel').style.display='none';
   document.getElementById('profileOverlay').style.display='none';
   document.getElementById('pauseOverlay').style.display='none';
+  document.getElementById('winnerOverlay').style.display='none';
   gameState='countdown';
   initGame();
   startGhostRecord();
@@ -2431,7 +2703,11 @@ function idleLoop(){
   ctx.save(); ctx.globalAlpha=alpha;
   ctx.font=`bold 18px 'Baloo 2'`; ctx.fillStyle='#FFD700';
   ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('👆 Tap to Fly!', W/2, H-90);
+  if(twoPlayerMode){
+    ctx.fillText('🟠 P1: Tap Left  |  P2: Tap Right 🔵', W/2, H-90);
+  } else {
+    ctx.fillText('👆 Tap to Fly!', W/2, H-90);
+  }
   ctx.restore();
   requestAnimationFrame(idleLoop);
 }
@@ -2441,6 +2717,8 @@ function togglePause(){
   if(gameState==='playing'){
     gameState='paused'; cancelAnimationFrame(animId);
     pauseBgMusic();
+    const psi = document.getElementById('pauseScoreInfo');
+    if(psi) psi.textContent = twoPlayerMode ? `🟠 P1: ${score}  |  🔵 P2: ${score2}` : `Score: ${score}  |  Best: ${hiScore}`;
     document.getElementById('pauseOverlay').style.display='flex';
     document.getElementById('mPauseBtn').querySelector('span.icon').textContent='▶';
     document.getElementById('mPauseBtn').querySelector('span:last-child').textContent='RESUME';
@@ -2488,19 +2766,14 @@ function handleMNight(e){
 }
 
 // ─── CANVAS TOUCH/CLICK (jump) ─────────────────────────────────────────────
-canvas.addEventListener('click', e=>{
-  e.stopPropagation();
-  if(gameState==='playing') doJump();
-});
-canvas.addEventListener('touchstart', e=>{
-  e.preventDefault(); e.stopPropagation();
-  unlockAudio();
-  if(gameState==='playing') doJump();
-}, {passive:false});
+// Original click replaced by 2P-aware handler
+// Original touchstart replaced by 2P-aware handler below
 
 // ─── KEYBOARD ─────────────────────────────────────────────────────────────
 document.addEventListener('keydown',e=>{
-  if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); doJump(); }
+  if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); if(twoPlayerMode) doJump(); else doJump(); }
+  if(e.code==='Enter'||e.code==='KeyW'||e.code==='KeyB'){ e.preventDefault(); if(twoPlayerMode) doJump2(); }
+  if(e.code==='KeyL'||e.code==='KeyN'){ if(twoPlayerMode) activatePower2(); }
   if(e.code==='ShiftLeft'||e.code==='ShiftRight'){ activatePower(); }
   if(e.code==='KeyP'||e.code==='Escape'){ if(gameState==='playing'||gameState==='paused') togglePause(); }
   if(e.code==='KeyM'){ soundOn=!soundOn; showToast(soundOn?'🔊 Sound ON':'🔇 Sound OFF'); }
@@ -2530,6 +2803,9 @@ function updateHomeTheme(){
 function buildCharPicker(){
   const row = document.getElementById('charPickerRow');
   row.innerHTML = '';
+  // Also build P2 picker
+  const row2 = document.getElementById('charPickerRow2');
+  if(row2) row2.innerHTML = '';
   SKINS.forEach((sk,i)=>{
     const btn = document.createElement('button');
     btn.className = 'charPickBtn' + (i===selectedSkin?' active':'');
@@ -2545,6 +2821,20 @@ function buildCharPicker(){
       if(gameState==='playing') startBgMusic(selectedSkin);
     });
     row.appendChild(btn);
+    // P2 picker
+    if(row2){
+      const btn2 = document.createElement('button');
+      btn2.className = 'charPickBtn' + (i===selectedSkin2?' active':'');
+      btn2.dataset.skin = i;
+      btn2.style.borderColor = 'rgba(96,165,250,0.4)';
+      btn2.innerHTML = `<span class="charPickEmoji">${sk.emoji}</span><span class="charPickCharName" style="color:#60a5fa">${sk.charName}</span><span class="charPickName">${sk.name}</span>`;
+      btn2.addEventListener('click',()=>{
+        selectedSkin2 = i;
+        row2.querySelectorAll('.charPickBtn').forEach((b,j)=>b.classList.toggle('active',j===i));
+        showToast(`🔵 P2: ${sk.emoji} ${sk.charName}!`);
+      });
+      row2.appendChild(btn2);
+    }
   });
 }
 
@@ -3039,6 +3329,350 @@ function drawFreezeUps(){
 
 // Apply freeze to pipe movement (called from game loop)
 // When freezeActive the pspd passed to pipes is 0
+
+
+// ─── TWO PLAYER MODE ─────────────────────────────────────────────────────── 
+let bird2 = null;
+let score2 = 0, lives2 = 3, power2 = 0, powerActive2 = false, powerTimer2 = 0;
+let p2Dead = false, p1Dead = false;
+let selectedSkin2 = 1; // P2 uses a different skin by default
+
+function initTwoPlayer(){
+  twoPlayerMode = true;
+  document.body.classList.add('two-player-active');
+  p1Dead = false; p2Dead = false;
+  score2 = 0; lives2 = 3; power2 = 0; powerActive2 = false; powerTimer2 = 0;
+  bird2 = { x:110, y:H/2 - 60, vy:0, rotation:0, invincible:0, flapFrame:0 };
+  updateP2HUD();
+  // Show P2 elements
+  document.getElementById('p2HUD').style.display = 'flex';
+  document.getElementById('splitLine').style.display = 'none'; // no split in portrait
+  document.getElementById('p1Label').style.display = 'block';
+  document.getElementById('p2Label').style.display = 'block';
+  const p2ctrl = document.getElementById('p2Controls');
+  if(p2ctrl) p2ctrl.style.display = 'flex';
+  // Adjust mobile controls for P1 only
+  const mc = document.getElementById('mobileControls');
+  if(mc) mc.style.display = 'flex';
+  showTapHints();
+}
+
+function resetTwoPlayer(){
+  twoPlayerMode = false;
+  document.body.classList.remove('two-player-active');
+  p1Dead = false; p2Dead = false;
+  document.getElementById('p2HUD').style.display = 'none';
+  document.getElementById('splitLine').style.display = 'none';
+  document.getElementById('p1Label').style.display = 'none';
+  document.getElementById('p2Label').style.display = 'none';
+  const p2ctrl = document.getElementById('p2Controls');
+  if(p2ctrl) p2ctrl.style.display = 'none';
+  hideTapHints();
+}
+
+function showTapHints(){
+  const h1 = document.getElementById('p1TapHint');
+  const h2 = document.getElementById('p2TapHint');
+  if(h1){ h1.style.opacity='1'; setTimeout(()=>h1.style.opacity='0',3000); }
+  if(h2){ h2.style.opacity='1'; setTimeout(()=>h2.style.opacity='0',3000); }
+}
+function hideTapHints(){
+  const h1 = document.getElementById('p1TapHint');
+  const h2 = document.getElementById('p2TapHint');
+  if(h1) h1.style.opacity='0';
+  if(h2) h2.style.opacity='0';
+}
+
+function updateP2HUD(){
+  const sd = document.getElementById('p2ScoreDisplay');
+  if(sd){
+    sd.textContent = twoPlayerMode ? '🔵 '+score2 : score2;
+    sd.classList.remove('score-pop');
+    void sd.offsetWidth;
+    sd.classList.add('score-pop');
+  }
+  const pf = document.getElementById('p2PowerFill');
+  if(pf) pf.style.width = Math.min(power2/100,1)*100+'%';
+  const lb = document.getElementById('p2LivesDisplay');
+  if(lb){
+    lb.innerHTML = '';
+    for(let i=0;i<3;i++){
+      const s=document.createElement('span');
+      s.style.cssText=`font-size:clamp(14px,3.5vw,18px);opacity:${i<lives2?1:0.2};transition:opacity 0.3s;filter:drop-shadow(0 0 4px #00f)`;
+      s.textContent='💙'; lb.appendChild(s);
+    }
+  }
+}
+
+function doJump2(){
+  if(gameState!=='playing' || p2Dead) return;
+  bird2.vy = JUMP_VEL; sfxJump();
+  spawnParticles(bird2.x, bird2.y+14, 'rgba(96,165,250,0.7)', 5, 2);
+}
+
+function activatePower2(){
+  if(power2>=25 && !powerActive2 && gameState==='playing' && !p2Dead){
+    powerActive2=true; powerTimer2=POWER_DURATION;
+    sfxPower(); spawnConfetti(bird2.x, bird2.y);
+    showToast('🔵 P2 POWER MODE!');
+    updateP2HUD();
+  } else if(power2<25){
+    showToast('⭐ P2: Collect stars for power!');
+  }
+}
+
+function handleP1Fly(e){ e.preventDefault(); e.stopPropagation(); unlockAudio(); if(gameState==='playing') doJump(); }
+function handleP2Fly(e){ e.preventDefault(); e.stopPropagation(); unlockAudio(); if(gameState==='playing') doJump2(); }
+function handleP1Power(e){ e.preventDefault(); e.stopPropagation(); activatePower(); }
+function handleP2Power(e){ e.preventDefault(); e.stopPropagation(); activatePower2(); }
+
+function takeDamage2(){
+  if(bird2.invincible>0 || powerActive2 || p2Dead) return;
+  sfxHit(); lives2--;
+  spawnParticles(bird2.x, bird2.y, '#3b82f6', 15, 6);
+  triggerShake();
+  haptic([80,30,80]);
+  updateP2HUD();
+  if(lives2<=0){ p2Dead = true; bird2.y = H + 100; checkTwoPlayerEnd(); return; }
+  bird2.invincible=100; bird2.vy=-5;
+  showToast(`💔 P2: ${lives2} ${lives2===1?'life':'lives'} left!`);
+}
+
+function checkTwoPlayerEnd(){
+  if(p1Dead && p2Dead){
+    // Both dead — show winner
+    showWinnerOverlay();
+  } else if(p1Dead && !p2Dead){
+    // P1 died, P2 still going - continue game, just ghost P1
+    addFloat(W/2, H/2-40, '🟠 P1 OUT! P2 LEADS!', '#60a5fa');
+    haptic([30,20,60]);
+    bird.y = -200; // remove P1 from view
+    score2 += 5; updateP2HUD();
+    addFloat(bird2.x, bird2.y-40, '🏅 LAST STANDING +5!', '#60a5fa');
+    showToast('🟠 P1 eliminated! P2 gets +5 survivor bonus!');
+  } else if(p2Dead && !p1Dead){
+    addFloat(W/2, H/2-40, '🔵 P2 OUT! P1 LEADS!', '#FF9933');
+    haptic([30,20,60]);
+    bird2.y = -200; // remove P2 from view
+    score += 5; updateHUD();
+    addFloat(bird.x, bird.y-40, '🏅 LAST STANDING +5!', '#FF9933');
+    showToast('🔵 P2 eliminated! P1 gets +5 survivor bonus!');
+  }
+}
+
+function showWinnerOverlay(){
+  gameState='dead';
+  cancelAnimationFrame(animId);
+  stopBgMusic();
+
+  const p1s = score, p2s = score2;
+  let title, sub, emoji_w;
+  if(p1s > p2s){
+    title='🟠 Player 1 Wins!'; sub=`P1 scored ${p1s} vs P2's ${p2s} — Superb!`; emoji_w='🏆';
+  } else if(p2s > p1s){
+    title='🔵 Player 2 Wins!'; sub=`P2 scored ${p2s} vs P1's ${p1s} — Brilliant!`; emoji_w='🏆';
+  } else {
+    title="🤝 It's a Tie!"; sub=`Both scored ${p1s}! Rematch?`; emoji_w='🎖️';
+  }
+
+  document.getElementById('winnerEmoji').textContent = emoji_w;
+  document.getElementById('winnerTitle').textContent = title;
+  document.getElementById('winnerSub').textContent = sub;
+  // Update winner screen with skins
+  document.querySelector('.ws-box.p1 .ws-label').textContent = `${SKINS[selectedSkin].emoji} P1 SCORE`;
+  document.querySelector('.ws-box.p2 .ws-label').textContent = `${SKINS[selectedSkin2].emoji} P2 SCORE`;
+  document.getElementById('winP1Score').textContent = p1s;
+  document.getElementById('winP2Score').textContent = p2s;
+  document.getElementById('winnerOverlay').style.display = 'flex';
+
+  spawnConfetti(W/2, H/2);
+  sfxDie();
+
+  // Update single-player hi-score with the winner's score
+  const winner = Math.max(p1s, p2s);
+  if(winner > hiScore){ hiScore=winner; localStorage.setItem('fv_hi',hiScore); }
+  totalGames++;
+  localStorage.setItem('fv_games',totalGames);
+  updateStreak();
+}
+
+function updateBird2Physics(){
+  if(!twoPlayerMode || p2Dead || bird2.y < -100) return;
+  if(!powerActive2){
+    bird2.vy += GRAVITY * DIFFICULTIES[selectedDiff].gravMult;
+    if(bird2.vy > MAX_FALL) bird2.vy = MAX_FALL;
+  } else {
+    bird2.vy = lerp(bird2.vy, 0, 0.12);
+    powerTimer2--;
+    power2 = Math.max(0, power2 - 100/POWER_DURATION);
+    if(powerTimer2<=0 || power2<=0){ powerActive2=false; showToast('🔵 P2 Power ended!'); }
+    updateP2HUD();
+  }
+  bird2.y += bird2.vy;
+  bird2.rotation = Math.max(-0.55, Math.min(1.3, bird2.vy*0.08));
+  if(bird2.invincible>0) bird2.invincible--;
+
+  // Boundaries
+  if(bird2.y > H-55-16){ bird2.y=H-55-16; takeDamage2(); }
+  if(bird2.y < 14){ bird2.y=14; bird2.vy=2; }
+}
+
+function checkBird2Collisions(){
+  if(!twoPlayerMode || p2Dead) return;
+  // Pipe collisions
+  pipes.forEach(p=>{
+    if(bird2.invincible>0 || powerActive2) return;
+    const bx=bird2.x, by=bird2.y;
+    if(bx+13>p.x && bx-13<p.x+PIPE_W && (by-16<p.top || by+16>p.top+p.gap)){
+      takeDamage2();
+    }
+  });
+  // Stars for power2
+  stars = stars.filter(s=>{
+    if(!s.takenP2 && dist(bird2.x, bird2.y, s.x, s.y)<30 && !p2Dead){
+      const amt=s.super?50:20;
+      power2=Math.min(100, power2+amt);
+      sfxStar(); spawnParticles(s.x, s.y, '#60a5fa', 8, 4);
+      addFloat(s.x, s.y-20, `P2 +${amt} PWR!`,'#60a5fa');
+      s.takenP2=true;
+      updateP2HUD();
+      if(!s.takenP1) return true; // P1 hasn't taken it yet, keep
+      return false; // both took it
+    }
+    return true;
+  });
+  // Pipe scoring for P2
+  pipes.forEach(p=>{
+    if(!p.passedP2 && bird2.x > p.x+PIPE_W){
+      p.passedP2=true;
+      score2++;
+      if(score2 > hiScore){ hiScore=score2; localStorage.setItem('fv_hi',hiScore); }
+      addFloat(bird2.x, bird2.y-30, '+1 P2','#60a5fa');
+      spawnParticles(bird2.x, bird2.y, '#60a5fa', 4, 2);
+      updateP2HUD();
+    }
+  });
+}
+
+function drawBird2(){
+  if(!twoPlayerMode || p2Dead) return;
+  const b = bird2;
+  const sk = SKINS[selectedSkin2];
+  if(b.invincible>0 && Math.floor(frame/5)%2===0) return;
+  ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.rotation);
+
+  if(powerActive2){
+    ctx.shadowColor='#60a5fa'; ctx.shadowBlur=20;
+    for(let i=0;i<3;i++){
+      ctx.strokeStyle=`rgba(96,165,250,${0.3-i*0.08})`;
+      ctx.lineWidth=3; ctx.beginPath();
+      ctx.arc(0,0,22+i*6+Math.sin(frame*0.08+i)*3,0,Math.PI*2); ctx.stroke();
+    }
+    ctx.shadowBlur=0;
+  }
+
+  // Draw P2 bird with skin + blue tint overlay
+  const wingUp = Math.floor(frame/7)%2===0;
+  const p2body = sk.body || '#dbeafe';
+  const p2collar = '#3b82f6';
+  ctx.fillStyle=p2body; ctx.strokeStyle=p2collar; ctx.lineWidth=1.5;
+  if(wingUp){
+    ctx.beginPath(); ctx.ellipse(-16,-4,7,11,-0.5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(16,-4,7,11,0.5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.ellipse(-16,5,7,11,-0.3,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(16,5,7,11,0.3,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  }
+  ctx.fillStyle=p2body; ctx.strokeStyle=p2collar; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.ellipse(0,3,15,18,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=p2collar;
+  ctx.beginPath(); ctx.ellipse(0,-8,7,6,0,0,Math.PI*2); ctx.fill();
+  ctx.fillRect(-3,-8,6,14);
+  ctx.fillStyle=sk.skin;
+  ctx.beginPath(); ctx.arc(0,-15,11,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#222';
+  ctx.beginPath(); ctx.arc(-3.5,-15.5,2.8,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(4,-15.5,2.8,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(-2.5,-16,1.2,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(5,-16,1.2,0,Math.PI*2); ctx.fill();
+  // Hair
+  ctx.fillStyle='#1a0a00';
+  ctx.beginPath(); ctx.ellipse(0,-22,11,8,0,Math.PI,Math.PI*2); ctx.fill();
+  // P2 badge
+  ctx.font='bold 9px Baloo 2'; ctx.fillStyle='#60a5fa';
+  ctx.textAlign='center'; ctx.fillText('P2',-18,-8);
+  ctx.restore();
+}
+
+// Mode picker buttons
+document.querySelectorAll('.modeBtn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.modeBtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const m = btn.dataset.mode;
+    const chips = document.querySelector('.feature-chips');
+    const p2sec = document.getElementById('p2SkinSection');
+    if(m==='two'){
+      showToast('👥 2-Player VS Mode! P1=left tap, P2=right tap!');
+      if(chips){ const tc=document.getElementById('twoChip'); if(!tc) chips.innerHTML += '<span class="chip" id="twoChip">👥 2-Player VS</span>'; }
+      if(p2sec) p2sec.style.display='block';
+      document.getElementById('startBtn').textContent='▶ Start VS Game';
+      document.getElementById('soloHint').style.display='none';
+      document.getElementById('twoPlayerHint').style.display='inline';
+    } else {
+      showToast('🎮 Solo Mode selected!');
+      const tc = document.getElementById('twoChip'); if(tc) tc.remove();
+      if(p2sec) p2sec.style.display='none';
+      document.getElementById('startBtn').textContent='▶ Start Game';
+      document.getElementById('soloHint').style.display='inline';
+      document.getElementById('twoPlayerHint').style.display='none';
+    }
+  });
+});
+
+document.getElementById('winnerPlayAgain').addEventListener('click',()=>{
+  document.getElementById('winnerOverlay').style.display='none';
+  startGame();
+});
+document.getElementById('winnerHome').addEventListener('click',()=>{
+  document.getElementById('winnerOverlay').style.display='none';
+  resetTwoPlayer();
+  goHome();
+});
+
+// ─── CANVAS TOUCH — 2P tap zones ──────────────────────────────────────────
+// In 2P mode: left half = P1 jump, right half = P2 jump
+canvas.addEventListener('touchstart', e=>{
+  e.preventDefault(); e.stopPropagation();
+  unlockAudio();
+  if(gameState!=='playing') return;
+  if(twoPlayerMode){
+    Array.from(e.changedTouches).forEach(t=>{
+      const rect = canvas.getBoundingClientRect();
+      const tx = (t.clientX - rect.left) / canvasScale;
+      if(tx < W/2) doJump();
+      else doJump2();
+    });
+  } else {
+    doJump();
+  }
+}, {passive:false});
+
+// Override existing canvas click for 2P
+canvas.addEventListener('click', e=>{
+  e.stopPropagation();
+  if(gameState!=='playing') return;
+  if(twoPlayerMode){
+    const rect = canvas.getBoundingClientRect();
+    const tx = (e.clientX - rect.left) / canvasScale;
+    if(tx < W/2) doJump();
+    else doJump2();
+  } else {
+    doJump();
+  }
+}, {capture:true});
+
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────
 frame=0; bgX=0; speed=DIFFICULTIES[selectedDiff].speed;
